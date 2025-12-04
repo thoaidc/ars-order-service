@@ -1,0 +1,112 @@
+package com.ars.orderservice.entity;
+
+import com.dct.config.entity.AbstractAuditingEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = "orders")
+@SuppressWarnings("unused")
+public class Order extends AbstractAuditingEntity {
+    @Column(name = "customer_id", nullable = false)
+    private Integer customerId;
+
+    @Column(name = "customer_name", length = 50, nullable = false)
+    private String customerName;
+
+    @Column(name = "discount", precision = 21, scale = 6, nullable = false)
+    private BigDecimal discount;
+
+    @Column(name = "amount", precision = 21, scale = 6, nullable = false)
+    private BigDecimal amount;
+
+    @Column(name = "total_amount", precision = 21, scale = 6, nullable = false)
+    private BigDecimal totalAmount;
+
+    @Column(name = "status", length = 50, nullable = false)
+    private String status;
+
+    @Column(name = "quantity", nullable = false)
+    private String quantity;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
+
+    @Column(name = "payment_status", length = 50, nullable = false)
+    private String paymentStatus;
+
+    public Integer getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public BigDecimal getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(BigDecimal discount) {
+        this.discount = discount;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return totalAmount;
+    }
+
+    public void setTotalAmount(BigDecimal totalAmount) {
+        this.totalAmount = totalAmount;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(String quantity) {
+        this.quantity = quantity;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+}
