@@ -26,9 +26,9 @@ public class OrderPaymentSuccessKafkaListener {
     }
 
     @KafkaListener(
-        topics = BaseKafkaConstants.Topic.REGISTER_SHOP,
-        groupId = BaseKafkaConstants.GroupId.REGISTER_SHOP,
-        concurrency = BaseKafkaConstants.Consumers.REGISTER_SHOP
+        topics = BaseKafkaConstants.Topic.ORDER_PAYMENT_SUCCESSFUL,
+        groupId = BaseKafkaConstants.GroupId.ORDER_PAYMENT_SUCCESSFUL,
+        concurrency = BaseKafkaConstants.Consumers.ORDER_PAYMENT_SUCCESSFUL
     )
     public void receiveMessage(
         @Payload String payload,

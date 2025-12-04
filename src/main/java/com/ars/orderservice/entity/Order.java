@@ -30,7 +30,7 @@ public class Order extends AbstractAuditingEntity {
     private String status;
 
     @Column(name = "quantity", nullable = false)
-    private String quantity;
+    private Integer quantity;
 
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;
@@ -86,11 +86,11 @@ public class Order extends AbstractAuditingEntity {
         this.status = status;
     }
 
-    public String getQuantity() {
+    public Integer getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(String quantity) {
+    public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
 
