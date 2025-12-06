@@ -1,11 +1,16 @@
 package com.ars.orderservice.entity;
 
 import com.dct.config.entity.AbstractAuditingEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -37,6 +42,9 @@ public class Order extends AbstractAuditingEntity {
 
     @Column(name = "payment_status", length = 50, nullable = false)
     private String paymentStatus;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<SubOrder> subOrders = new ArrayList<>();
 
     public Integer getCustomerId() {
         return customerId;
@@ -108,5 +116,13 @@ public class Order extends AbstractAuditingEntity {
 
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public List<SubOrder> getSubOrders() {
+        return subOrders;
+    }
+
+    public void setSubOrders(List<SubOrder> subOrders) {
+        this.subOrders = subOrders;
     }
 }

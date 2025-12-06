@@ -11,6 +11,7 @@ import com.ars.orderservice.service.CartService;
 import com.dct.model.dto.response.BaseResponseDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public BaseResponseDTO updateCart(CartDTO cartDTO) {
         Optional<Cart> cartOptional = cartRepository.findById(cartDTO.getId());
         Cart cart = cartOptional.orElseGet(Cart::new);

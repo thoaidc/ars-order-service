@@ -98,6 +98,7 @@ CREATE TABLE order_product (
     product_id INT NOT NULL,
     product_code VARCHAR(100) NOT NULL,
     product_name VARCHAR(255) NOT NULL,
+    product_thumbnail VARCHAR(255) NOT NULL,
     note VARCHAR(500),
     data VARCHAR(1000),
     amount DECIMAL(21,6) DEFAULT 0.00 NOT NULL,

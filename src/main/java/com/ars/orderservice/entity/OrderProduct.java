@@ -1,8 +1,12 @@
 package com.ars.orderservice.entity;
 
 import com.dct.config.entity.AbstractAuditingEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -11,20 +15,25 @@ import java.math.BigDecimal;
 @Table(name = "order_product")
 @SuppressWarnings("unused")
 public class OrderProduct extends AbstractAuditingEntity {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_order_id", nullable = false)
+    @JsonIgnore
+    private SubOrder subOrder;
+
     @Column(name = "product_code", nullable = false)
     private String productCode;
 
     @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Column(name = "product_thumbnail", nullable = false)
+    private String productThumbnail;
+
     @Column(name = "product_id", nullable = false)
     private Integer productId;
 
     @Column(name = "order_id", nullable = false)
     private Integer orderId;
-
-    @Column(name = "sub_order_id", nullable = false)
-    private Integer subOrderId;
 
     @Column(name = "shop_id", nullable = false)
     private Integer shopId;
@@ -116,12 +125,12 @@ public class OrderProduct extends AbstractAuditingEntity {
         this.totalAmount = totalAmount;
     }
 
-    public Integer getSubOrderId() {
-        return subOrderId;
+    public SubOrder getSubOrder() {
+        return subOrder;
     }
 
-    public void setSubOrderId(Integer subOrderId) {
-        this.subOrderId = subOrderId;
+    public void setSubOrder(SubOrder subOrder) {
+        this.subOrder = subOrder;
     }
 
     public Integer getShopId() {

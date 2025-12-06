@@ -1,18 +1,28 @@
 package com.ars.orderservice.entity;
 
 import com.dct.config.entity.AbstractAuditingEntity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "sub_order")
 @SuppressWarnings("unused")
 public class SubOrder extends AbstractAuditingEntity {
-    @Column(name = "order_id", nullable = false)
-    private Integer orderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    @JsonIgnore
+    private Order order;
 
     @Column(name = "shop_id", nullable = false)
     private Integer shopId;
@@ -44,12 +54,15 @@ public class SubOrder extends AbstractAuditingEntity {
     @Column(name = "payment_status", length = 50, nullable = false)
     private String paymentStatus;
 
-    public Integer getOrderId() {
-        return orderId;
+    @OneToMany(mappedBy = "subOrder", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<OrderProduct> products = new ArrayList<>();
+
+    public Order getOrder() {
+        return order;
     }
 
-    public void setOrderId(Integer orderId) {
-        this.orderId = orderId;
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public Integer getShopId() {
@@ -130,5 +143,13 @@ public class SubOrder extends AbstractAuditingEntity {
 
     public void setPaymentStatus(String paymentStatus) {
         this.paymentStatus = paymentStatus;
+    }
+
+    public List<OrderProduct> getProducts() {
+        return products;
+    }
+
+    public void setProducts(List<OrderProduct> products) {
+        this.products = products;
     }
 }

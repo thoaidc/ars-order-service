@@ -1,10 +1,10 @@
 package com.ars.orderservice.constants;
 
-public class OrderConstants {
+public interface OrderConstants {
     interface Status {
-        String PENDING = "";
-        String COMPLETED = "";
-        String FAILED = "";
+        String PENDING = "PENDING";
+        String COMPLETED = "COMPLETED";
+        String FAILED = "FAILED";
     }
 
     interface PaymentStatus {

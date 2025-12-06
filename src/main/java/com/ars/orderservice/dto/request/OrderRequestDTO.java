@@ -11,8 +11,6 @@ import java.util.List;
 
 public class OrderRequestDTO {
     @NotNull
-    private Integer shopId;
-    @NotNull
     private Integer customerId;
     @NotBlank
     private String customerName;
@@ -28,14 +26,6 @@ public class OrderRequestDTO {
     @NotBlank
     private String paymentMethod;
     private List<@Valid OrderProduct> products = new ArrayList<>();
-
-    public Integer getShopId() {
-        return shopId;
-    }
-
-    public void setShopId(Integer shopId) {
-        this.shopId = shopId;
-    }
 
     public Integer getCustomerId() {
         return customerId;
@@ -103,11 +93,15 @@ public class OrderRequestDTO {
 
     public static class OrderProduct {
         @NotNull
+        private Integer shopId;
+        @NotNull
         private Integer productId;
         @NotBlank
         private String productCode;
         @NotBlank
         private String productName;
+        @NotBlank
+        private String productThumbnail;
         @NotBlank
         private String note;
         @NotBlank
@@ -118,6 +112,22 @@ public class OrderRequestDTO {
         private BigDecimal amount;
         @NotNull
         private BigDecimal totalAmount;
+
+        public Integer getShopId() {
+            return shopId;
+        }
+
+        public void setShopId(Integer shopId) {
+            this.shopId = shopId;
+        }
+
+        public String getProductThumbnail() {
+            return productThumbnail;
+        }
+
+        public void setProductThumbnail(String productThumbnail) {
+            this.productThumbnail = productThumbnail;
+        }
 
         public Integer getProductId() {
             return productId;
