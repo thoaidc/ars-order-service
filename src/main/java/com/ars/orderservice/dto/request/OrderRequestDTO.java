@@ -1,30 +1,24 @@
 package com.ars.orderservice.dto.request;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OrderRequestDTO {
     @NotNull
     private Integer customerId;
     @NotBlank
     private String customerName;
-    @NotNull
-    @Min(value = 0)
-    private Integer quantity;
-    @NotNull
-    private BigDecimal discount;
-    @NotNull
-    private BigDecimal amount;
-    @NotNull
-    private BigDecimal totalAmount;
     @NotBlank
     private String paymentMethod;
+    private Set<Integer> voucherIds = new HashSet<>();
+    @NotEmpty
     private List<@Valid OrderProduct> products = new ArrayList<>();
 
     public Integer getCustomerId() {
@@ -43,44 +37,20 @@ public class OrderRequestDTO {
         this.customerName = customerName;
     }
 
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public BigDecimal getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(BigDecimal discount) {
-        this.discount = discount;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
-    public BigDecimal getTotalAmount() {
-        return totalAmount;
-    }
-
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
-
     public String getPaymentMethod() {
         return paymentMethod;
     }
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public Set<Integer> getVoucherIds() {
+        return voucherIds;
+    }
+
+    public void setVoucherIds(Set<Integer> voucherIds) {
+        this.voucherIds = voucherIds;
     }
 
     public List<OrderProduct> getProducts() {
@@ -97,21 +67,9 @@ public class OrderRequestDTO {
         @NotNull
         private Integer productId;
         @NotBlank
-        private String productCode;
-        @NotBlank
-        private String productName;
-        @NotBlank
-        private String productThumbnail;
-        @NotBlank
         private String note;
         @NotBlank
         private String data;
-        @NotNull
-        private BigDecimal discount;
-        @NotNull
-        private BigDecimal amount;
-        @NotNull
-        private BigDecimal totalAmount;
 
         public Integer getShopId() {
             return shopId;
@@ -121,36 +79,12 @@ public class OrderRequestDTO {
             this.shopId = shopId;
         }
 
-        public String getProductThumbnail() {
-            return productThumbnail;
-        }
-
-        public void setProductThumbnail(String productThumbnail) {
-            this.productThumbnail = productThumbnail;
-        }
-
         public Integer getProductId() {
             return productId;
         }
 
         public void setProductId(Integer productId) {
             this.productId = productId;
-        }
-
-        public String getProductCode() {
-            return productCode;
-        }
-
-        public void setProductCode(String productCode) {
-            this.productCode = productCode;
-        }
-
-        public String getProductName() {
-            return productName;
-        }
-
-        public void setProductName(String productName) {
-            this.productName = productName;
         }
 
         public String getNote() {
@@ -167,30 +101,6 @@ public class OrderRequestDTO {
 
         public void setData(String data) {
             this.data = data;
-        }
-
-        public BigDecimal getDiscount() {
-            return discount;
-        }
-
-        public void setDiscount(BigDecimal discount) {
-            this.discount = discount;
-        }
-
-        public BigDecimal getAmount() {
-            return amount;
-        }
-
-        public void setAmount(BigDecimal amount) {
-            this.amount = amount;
-        }
-
-        public BigDecimal getTotalAmount() {
-            return totalAmount;
-        }
-
-        public void setTotalAmount(BigDecimal totalAmount) {
-            this.totalAmount = totalAmount;
         }
     }
 }

@@ -101,8 +101,6 @@ CREATE TABLE order_product (
     product_thumbnail VARCHAR(255) NOT NULL,
     note VARCHAR(500),
     data VARCHAR(1000),
-    amount DECIMAL(21,6) DEFAULT 0.00 NOT NULL,
-    discount DECIMAL(21,6) DEFAULT 0.00 NOT NULL,
     total_amount DECIMAL(21,6) DEFAULT 0.00 NOT NULL,
     created_by VARCHAR(50),
     last_modified_by VARCHAR(50),

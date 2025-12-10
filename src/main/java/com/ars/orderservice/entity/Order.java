@@ -23,19 +23,19 @@ public class Order extends AbstractAuditingEntity {
     private String customerName;
 
     @Column(name = "discount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal discount;
+    private BigDecimal discount = BigDecimal.ZERO;
 
     @Column(name = "amount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal amount;
+    private BigDecimal amount = BigDecimal.ZERO;
 
     @Column(name = "total_amount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     @Column(name = "status", length = 50, nullable = false)
     private String status;
 
     @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    private Integer quantity = 0;
 
     @Column(name = "payment_method", length = 50)
     private String paymentMethod;

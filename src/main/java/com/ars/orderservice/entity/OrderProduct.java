@@ -44,14 +44,8 @@ public class OrderProduct extends AbstractAuditingEntity {
     @Column(name = "data", length = 2000)
     private String data;
 
-    @Column(name = "discount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal discount;
-
-    @Column(name = "amount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal amount;
-
     @Column(name = "total_amount", precision = 21, scale = 6, nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
 
     public String getProductCode() {
         return productCode;
@@ -101,22 +95,6 @@ public class OrderProduct extends AbstractAuditingEntity {
         this.data = data;
     }
 
-    public BigDecimal getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(BigDecimal discount) {
-        this.discount = discount;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
@@ -139,5 +117,13 @@ public class OrderProduct extends AbstractAuditingEntity {
 
     public void setShopId(Integer shopId) {
         this.shopId = shopId;
+    }
+
+    public String getProductThumbnail() {
+        return productThumbnail;
+    }
+
+    public void setProductThumbnail(String productThumbnail) {
+        this.productThumbnail = productThumbnail;
     }
 }
