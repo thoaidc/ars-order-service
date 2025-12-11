@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
@@ -46,6 +47,13 @@ public class OrderProduct extends AbstractAuditingEntity {
 
     @Column(name = "total_amount", precision = 21, scale = 6, nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @PrePersist
+    public void prePersist() {
+        if (subOrder != null && subOrder.getOrder() != null && subOrder.getOrder().getId() != null) {
+            this.orderId = subOrder.getOrder().getId();
+        }
+    }
 
     public String getProductCode() {
         return productCode;

@@ -16,6 +16,9 @@ import java.util.List;
 @Table(name = "orders")
 @SuppressWarnings("unused")
 public class Order extends AbstractAuditingEntity {
+    @Column(name = "code", length = 50, nullable = false)
+    private String code;
+
     @Column(name = "customer_id", nullable = false)
     private Integer customerId;
 
@@ -45,6 +48,14 @@ public class Order extends AbstractAuditingEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<SubOrder> subOrders = new ArrayList<>();
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     public Integer getCustomerId() {
         return customerId;

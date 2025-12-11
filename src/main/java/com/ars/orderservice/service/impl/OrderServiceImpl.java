@@ -8,13 +8,18 @@ import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.dto.response.CheckOrderInfoResponseDTO;
 import com.ars.orderservice.entity.Order;
 import com.ars.orderservice.entity.OrderProduct;
+import com.ars.orderservice.entity.OutBox;
 import com.ars.orderservice.entity.SubOrder;
 import com.ars.orderservice.repository.OrderRepository;
+import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.service.OrderService;
 import com.dct.config.common.HttpClientUtils;
 import com.dct.model.common.DateUtils;
+import com.dct.model.common.JsonUtils;
 import com.dct.model.constants.BaseDatetimeConstants;
+import com.dct.model.constants.BaseOutBoxConstants;
 import com.dct.model.dto.response.BaseResponseDTO;
+import com.dct.model.event.OrderCreatedEvent;
 import com.dct.model.event.PaymentFailureEvent;
 import com.dct.model.event.PaymentSuccessEvent;
 import com.dct.model.exception.BaseBadRequestException;
@@ -34,18 +39,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
     private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
     private static final String ENTITY_NAME = "com.ars.orderservice.service.impl.OrderServiceImpl";
-    private final OrderRepository orderRepository;
     private final RestTemplate restTemplate;
+    private final OrderRepository orderRepository;
+    private final OutBoxRepository outBoxRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, RestTemplate restTemplate) {
-        this.orderRepository = orderRepository;
+    public OrderServiceImpl(RestTemplate restTemplate,
+                            OrderRepository orderRepository,
+                            OutBoxRepository outBoxRepository) {
         this.restTemplate = restTemplate;
+        this.orderRepository = orderRepository;
+        this.outBoxRepository = outBoxRepository;
     }
 
     @Override
@@ -78,6 +88,7 @@ public class OrderServiceImpl implements OrderService {
             SubOrder subOrder = new SubOrder();
             BeanUtils.copyProperties(order, subOrder, "id", "subOrders", "amount", "discount", "totalAmount");
             subOrder.setOrder(order);
+            subOrder.setCode(UUID.randomUUID().toString());
             subOrder.setShopId(entry.getKey());
             mapSubOrderRequest(subOrder, entry.getValue(), orderProductMap);
             calculateSubOrderAmount(subOrder, checkOrderInfoResponse);
@@ -85,8 +96,25 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setSubOrders(subOrders);
+        order.setCode(UUID.randomUUID().toString());
         orderRepository.save(order);
+        saveOutboxEvent(order, requestDTO);
         return BaseResponseDTO.builder().ok(order.getId());
+    }
+
+    private void saveOutboxEvent(Order order, OrderRequestDTO request) {
+        OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
+        orderCreatedEvent.setOrderId(order.getId());
+        orderCreatedEvent.setUserId(request.getCustomerId());
+        orderCreatedEvent.setAmount(order.getAmount());
+        orderCreatedEvent.setPaymentMethod(order.getPaymentMethod());
+        orderCreatedEvent.setSagaId(UUID.randomUUID().toString());
+        OutBox outBox = new OutBox();
+        outBox.setSagaId(orderCreatedEvent.getSagaId());
+        outBox.setType(BaseOutBoxConstants.Type.ORDER_CREATED);
+        outBox.setStatus(BaseOutBoxConstants.Status.PENDING);
+        outBox.setValue(JsonUtils.toJsonString(orderCreatedEvent));
+        outBoxRepository.save(outBox);
     }
 
     private CheckOrderInfoResponseDTO validateOrderInfo(OrderRequestDTO requestDTO) {
@@ -200,6 +228,7 @@ public class OrderServiceImpl implements OrderService {
                         throw new BaseBadRequestException(ENTITY_NAME, "Product not found!");
                     }
 
+                    orderProduct.setSubOrder(subOrder);
                     orderProduct.setShopId(product.getShopId());
                     orderProduct.setProductId(product.getProductId());
                     orderProduct.setNote(product.getNote());

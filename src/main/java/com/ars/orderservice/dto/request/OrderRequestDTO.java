@@ -17,7 +17,7 @@ public class OrderRequestDTO {
     private String customerName;
     @NotBlank
     private String paymentMethod;
-    private Set<Integer> voucherIds = new HashSet<>();
+    private Set<@NotNull Integer> voucherIds = new HashSet<>();
     @NotEmpty
     private List<@Valid OrderProduct> products = new ArrayList<>();
 
@@ -66,9 +66,7 @@ public class OrderRequestDTO {
         private Integer shopId;
         @NotNull
         private Integer productId;
-        @NotBlank
         private String note;
-        @NotBlank
         private String data;
 
         public Integer getShopId() {

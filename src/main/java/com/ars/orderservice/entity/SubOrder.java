@@ -24,6 +24,9 @@ public class SubOrder extends AbstractAuditingEntity {
     @JsonIgnore
     private Order order;
 
+    @Column(name = "code", length = 50, nullable = false, unique = true)
+    private String code;
+
     @Column(name = "shop_id", nullable = false)
     private Integer shopId;
 
@@ -63,6 +66,14 @@ public class SubOrder extends AbstractAuditingEntity {
 
     public void setOrder(Order order) {
         this.order = order;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Integer getShopId() {
