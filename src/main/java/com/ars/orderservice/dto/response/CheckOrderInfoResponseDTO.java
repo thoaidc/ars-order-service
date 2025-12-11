@@ -9,6 +9,7 @@ public class CheckOrderInfoResponseDTO {
     private List<ProductDTO> products = new ArrayList<>();
 
     public static class VoucherDTO {
+        private Integer id;
         private Integer shopId;
         private String code;
         private Integer type;
@@ -16,6 +17,14 @@ public class CheckOrderInfoResponseDTO {
         private Integer dateStarted;
         private Integer dateExpired;
         private BigDecimal value = BigDecimal.ZERO;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
 
         public Integer getShopId() {
             return shopId;

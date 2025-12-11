@@ -24,8 +24,6 @@ import com.dct.model.event.PaymentFailureEvent;
 import com.dct.model.event.PaymentSuccessEvent;
 import com.dct.model.exception.BaseBadRequestException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
@@ -44,7 +42,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
     private static final String ENTITY_NAME = "com.ars.orderservice.service.impl.OrderServiceImpl";
     private final RestTemplate restTemplate;
     private final OrderRepository orderRepository;
@@ -137,8 +134,8 @@ public class OrderServiceImpl implements OrderService {
             throw new BaseBadRequestException(ENTITY_NAME, "Invalid order request, not found products or vouchers info");
         }
 
-        checkProductsInfo(checkOrderInfoResponse.getProducts());
-        checkVouchersInfo(checkOrderInfoResponse.getVouchers());
+        checkProductsInfo(checkOrderInfoResponse.getProducts(), productIds.size());
+        checkVouchersInfo(checkOrderInfoResponse.getVouchers(), requestDTO.getVoucherIds().size());
         return checkOrderInfoResponse;
     }
 
@@ -194,7 +191,11 @@ public class OrderServiceImpl implements OrderService {
         return voucherValue;
     }
 
-    private void checkProductsInfo(List<CheckOrderInfoResponseDTO.ProductDTO> productDTOS) {
+    private void checkProductsInfo(List<CheckOrderInfoResponseDTO.ProductDTO> productDTOS, int totalItems) {
+        if (Objects.isNull(productDTOS) || productDTOS.size() != totalItems) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Products not found");
+        }
+
         productDTOS.forEach(productDTO -> {
             if (!Objects.equals(productDTO.getStatus(), "ACTIVE")) {
                 throw new BaseBadRequestException(ENTITY_NAME, "Invalid product info, this product is not available");
@@ -202,7 +203,11 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
-    private void checkVouchersInfo(List<CheckOrderInfoResponseDTO.VoucherDTO> voucherDTOS) {
+    private void checkVouchersInfo(List<CheckOrderInfoResponseDTO.VoucherDTO> voucherDTOS, int totalItems) {
+        if (Objects.isNull(voucherDTOS) || voucherDTOS.size() != totalItems) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Vouchers not found");
+        }
+
         String nowStr = DateUtils.now().toString(BaseDatetimeConstants.Formatter.YYYY_MM_DD_NORMALIZED);
         int now = Integer.parseInt(nowStr);
 
