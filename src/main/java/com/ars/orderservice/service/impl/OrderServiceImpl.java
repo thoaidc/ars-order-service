@@ -122,21 +122,24 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toSet());
         checkOrderInfoRequest.setVoucherIds(requestDTO.getVoucherIds());
         checkOrderInfoRequest.setProductIds(productIds);
-
-        CheckOrderInfoResponseDTO checkOrderInfoResponse = HttpClientUtils.builder()
+        BaseResponseDTO checkOrderInfoResponse = HttpClientUtils.builder()
                 .restTemplate(restTemplate)
                 .url("http://localhost:8002/api/internal/products/check-order-info")
                 .method(HttpMethod.POST)
                 .body(checkOrderInfoRequest)
-                .execute(CheckOrderInfoResponseDTO.class);
+                .execute(BaseResponseDTO.class);
 
         if (Objects.isNull(checkOrderInfoResponse)) {
             throw new BaseBadRequestException(ENTITY_NAME, "Invalid order request, not found products or vouchers info");
         }
 
-        checkProductsInfo(checkOrderInfoResponse.getProducts(), productIds.size());
-        checkVouchersInfo(checkOrderInfoResponse.getVouchers(), requestDTO.getVoucherIds().size());
-        return checkOrderInfoResponse;
+        CheckOrderInfoResponseDTO checkOrderInfoResult = JsonUtils.convertValue(
+            checkOrderInfoResponse.getResult(),
+            CheckOrderInfoResponseDTO.class
+        );
+        checkProductsInfo(checkOrderInfoResult.getProducts(), productIds.size());
+        checkVouchersInfo(checkOrderInfoResult.getVouchers(), requestDTO.getVoucherIds().size());
+        return checkOrderInfoResult;
     }
 
     private void calculateOrderAmount(Order order, CheckOrderInfoResponseDTO checkOrderInfo) {
