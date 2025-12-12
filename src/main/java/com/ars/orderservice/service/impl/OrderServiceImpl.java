@@ -105,9 +105,8 @@ public class OrderServiceImpl implements OrderService {
         orderCreatedEvent.setUserId(request.getCustomerId());
         orderCreatedEvent.setAmount(order.getAmount());
         orderCreatedEvent.setPaymentMethod(order.getPaymentMethod());
-        orderCreatedEvent.setSagaId(UUID.randomUUID().toString());
         OutBox outBox = new OutBox();
-        outBox.setSagaId(orderCreatedEvent.getSagaId());
+        outBox.setRefId(order.getId());
         outBox.setType(BaseOutBoxConstants.Type.ORDER_CREATED);
         outBox.setStatus(BaseOutBoxConstants.Status.PENDING);
         outBox.setValue(JsonUtils.toJsonString(orderCreatedEvent));

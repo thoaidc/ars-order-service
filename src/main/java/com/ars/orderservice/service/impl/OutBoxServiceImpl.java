@@ -34,8 +34,8 @@ public class OutBoxServiceImpl implements OutBoxService {
 
         for (OutBox outBox : outBoxes) {
             if (Objects.nonNull(outBox)) {
-                log.info("[SEND_EVENT_FROM_OUTBOX] - sagaId: {}, type: {}, content: {}",
-                    outBox.getSagaId(), outBox.getType(), outBox.getValue()
+                log.info("[SEND_EVENT_FROM_OUTBOX] - refId: {}, type: {}, content: {}",
+                    outBox.getRefId(), outBox.getType(), outBox.getValue()
                 );
                 kafkaProducer.sendMessageOrderCreated(outBox.getValue());
                 outBox.setStatus(BaseOutBoxConstants.Status.COMPLETION);
