@@ -14,7 +14,6 @@ import jakarta.persistence.SqlResultSetMappings;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,7 +75,7 @@ public class Order extends AbstractAuditingEntity {
     @Column(name = "payment_status", length = 50, nullable = false)
     private String paymentStatus;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SubOrder> subOrders = new ArrayList<>();
 
     public String getCode() {

@@ -1,16 +1,20 @@
 package com.ars.orderservice.service.impl;
 
 import com.ars.orderservice.constants.OrderConstants;
+import com.ars.orderservice.dto.mapping.OrderProductResponse;
 import com.ars.orderservice.dto.mapping.OrderResponse;
 import com.ars.orderservice.dto.request.CheckOrderInfoRequestDTO;
 import com.ars.orderservice.dto.request.OrderRequestDTO;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.dto.response.CheckOrderInfoResponseDTO;
 import com.ars.orderservice.dto.response.OrderDTO;
+import com.ars.orderservice.dto.response.OrderDetailDTO;
+import com.ars.orderservice.dto.response.SubOrderDetailDTO;
 import com.ars.orderservice.entity.Order;
 import com.ars.orderservice.entity.OrderProduct;
 import com.ars.orderservice.entity.OutBox;
 import com.ars.orderservice.entity.SubOrder;
+import com.ars.orderservice.repository.OrderProductRepository;
 import com.ars.orderservice.repository.OrderRepository;
 import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.repository.SubOrderRepository;
@@ -31,6 +35,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -51,14 +57,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OutBoxRepository outBoxRepository;
     private final SubOrderRepository subOrderRepository;
+    private final OrderProductRepository orderProductRepository;
 
     public OrderServiceImpl(RestTemplate restTemplate,
                             OrderRepository orderRepository,
-                            OutBoxRepository outBoxRepository, SubOrderRepository subOrderRepository) {
+                            OutBoxRepository outBoxRepository,
+                            SubOrderRepository subOrderRepository,
+                            OrderProductRepository orderProductRepository) {
         this.restTemplate = restTemplate;
         this.orderRepository = orderRepository;
         this.outBoxRepository = outBoxRepository;
         this.subOrderRepository = subOrderRepository;
+        this.orderProductRepository = orderProductRepository;
     }
 
     @Override
@@ -271,17 +281,79 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public BaseResponseDTO getOrderDetail(Integer orderId) {
-        return null;
+        Optional<Order> orderOptional = orderRepository.findByIdWithSubOrders(orderId);
+
+        if (orderOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order not found - ID: " + orderId);
+        }
+
+        Order order = orderOptional.get();
+        OrderDetailDTO orderDetail = new OrderDetailDTO();
+        BeanUtils.copyProperties(order, orderDetail, "subOrders");
+        List<OrderProductResponse> orderProductResponses = orderProductRepository.findAllOrderProductByOrderId(orderId);
+        MultiValueMap<Integer, OrderDTO.OrderProductDTO> orderProductsMap = new LinkedMultiValueMap<>();
+        List<OrderDTO.OrderProductDTO> orderProducts = orderProductResponses.stream()
+                .map(orderProductResponse -> {
+                    OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
+                    BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    orderProductsMap.add(orderProductDTO.getSubOrderId(), orderProductDTO);
+                    return orderProductDTO;
+                }).toList();
+        orderDetail.setProducts(orderProducts);
+        List<SubOrderDetailDTO> subOrders = order.getSubOrders().stream()
+                .map(subOrder -> {
+                    SubOrderDetailDTO subOrderDetailDTO = new SubOrderDetailDTO();
+                    BeanUtils.copyProperties(subOrder, subOrderDetailDTO, "order", "products");
+                    subOrderDetailDTO.setOrderId(orderId);
+                    subOrderDetailDTO.setProducts(orderProductsMap.get(subOrder.getId()));
+                    return subOrderDetailDTO;
+                }).toList();
+        orderDetail.setSubOrders(subOrders);
+        return BaseResponseDTO.builder().ok(orderDetail);
     }
 
     @Override
     public BaseResponseDTO getOrderDetailForUser(Integer orderId) {
-        return null;
+        Optional<Order> orderOptional = orderRepository.findById(orderId);
+
+        if (orderOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order not found - ID: " + orderId);
+        }
+
+        Order order = orderOptional.get();
+        OrderDetailDTO orderDetail = new OrderDetailDTO();
+        BeanUtils.copyProperties(order, orderDetail, "subOrders");
+        List<OrderProductResponse> orderProductResponses = orderProductRepository.findAllOrderProductByOrderId(orderId);
+        List<OrderDTO.OrderProductDTO> orderProducts = orderProductResponses.stream()
+                .map(orderProductResponse -> {
+                    OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
+                    BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    return orderProductDTO;
+                }).toList();
+        orderDetail.setProducts(orderProducts);
+        return BaseResponseDTO.builder().ok(orderDetail);
     }
 
     @Override
     public BaseResponseDTO getOrderDetailForShop(Integer orderId) {
-        return null;
+        Optional<SubOrder> subOrderOptional = subOrderRepository.findById(orderId);
+
+        if (subOrderOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order not found - ID: " + orderId);
+        }
+
+        SubOrder subOrder = subOrderOptional.get();
+        OrderDetailDTO orderDetail = new OrderDetailDTO();
+        BeanUtils.copyProperties(subOrder, orderDetail, "order", "products");
+        List<OrderProductResponse> orderProductResponses = orderProductRepository.findAllOrderProductBySubOrderId(orderId);
+        List<OrderDTO.OrderProductDTO> orderProducts = orderProductResponses.stream()
+                .map(orderProductResponse -> {
+                    OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
+                    BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    return orderProductDTO;
+                }).toList();
+        orderDetail.setProducts(orderProducts);
+        return BaseResponseDTO.builder().ok(orderDetail);
     }
 
     @Override

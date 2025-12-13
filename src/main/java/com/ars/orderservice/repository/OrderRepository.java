@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Integer>, OrderRepositoryCustom {
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.subOrders WHERE o.id = :orderId")
+    Optional<Order> findByIdWithSubOrders(Integer orderId);
 
     @Query(value = """
             SELECT id, code, amount, discount, status,
