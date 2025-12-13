@@ -1,7 +1,6 @@
 package com.ars.orderservice.dto.response;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 public class OrderDTO {
     private Integer id;
@@ -15,7 +14,9 @@ public class OrderDTO {
     private String status;
     private String paymentStatus;
     private String paymentMethod;
-    private Instant orderDate;
+    private String orderDate;
+
+    public OrderDTO() {}
 
     public OrderDTO(
         Integer id,
@@ -27,7 +28,7 @@ public class OrderDTO {
         String status,
         String paymentStatus,
         String paymentMethod,
-        Instant orderDate
+        String orderDate
     ) {
         this.id = id;
         this.code = code;
@@ -53,7 +54,7 @@ public class OrderDTO {
         String status,
         String paymentStatus,
         String paymentMethod,
-        Instant orderDate
+        String orderDate
     ) {
         this.id = id;
         this.shopId = shopId;
@@ -67,6 +68,108 @@ public class OrderDTO {
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
         this.orderDate = orderDate;
+    }
+
+    public static class OrderProductDTO {
+        private Integer id;
+        private Integer subOrderId;
+        private Integer orderId;
+        private Integer shopId;
+        private Integer productId;
+        private String productCode;
+        private String productName;
+        private String productThumbnail;
+        private String note;
+        private String data;
+        private BigDecimal totalAmount;
+
+        public Integer getId() {
+            return id;
+        }
+
+        public void setId(Integer id) {
+            this.id = id;
+        }
+
+        public Integer getSubOrderId() {
+            return subOrderId;
+        }
+
+        public void setSubOrderId(Integer subOrderId) {
+            this.subOrderId = subOrderId;
+        }
+
+        public Integer getOrderId() {
+            return orderId;
+        }
+
+        public void setOrderId(Integer orderId) {
+            this.orderId = orderId;
+        }
+
+        public Integer getShopId() {
+            return shopId;
+        }
+
+        public void setShopId(Integer shopId) {
+            this.shopId = shopId;
+        }
+
+        public Integer getProductId() {
+            return productId;
+        }
+
+        public void setProductId(Integer productId) {
+            this.productId = productId;
+        }
+
+        public String getProductCode() {
+            return productCode;
+        }
+
+        public void setProductCode(String productCode) {
+            this.productCode = productCode;
+        }
+
+        public String getProductName() {
+            return productName;
+        }
+
+        public void setProductName(String productName) {
+            this.productName = productName;
+        }
+
+        public String getProductThumbnail() {
+            return productThumbnail;
+        }
+
+        public void setProductThumbnail(String productThumbnail) {
+            this.productThumbnail = productThumbnail;
+        }
+
+        public String getNote() {
+            return note;
+        }
+
+        public void setNote(String note) {
+            this.note = note;
+        }
+
+        public String getData() {
+            return data;
+        }
+
+        public void setData(String data) {
+            this.data = data;
+        }
+
+        public BigDecimal getTotalAmount() {
+            return totalAmount;
+        }
+
+        public void setTotalAmount(BigDecimal totalAmount) {
+            this.totalAmount = totalAmount;
+        }
     }
 
     public Integer getId() {
@@ -157,11 +260,11 @@ public class OrderDTO {
         this.paymentMethod = paymentMethod;
     }
 
-    public Instant getOrderDate() {
+    public String getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Instant orderDate) {
+    public void setOrderDate(String orderDate) {
         this.orderDate = orderDate;
     }
 }

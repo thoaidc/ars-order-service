@@ -1,7 +1,6 @@
 package com.ars.orderservice.dto.mapping;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 
 public interface OrderResponse {
     Integer getId();
@@ -12,5 +11,5 @@ public interface OrderResponse {
     String getStatus();
     String getPaymentStatus();
     String getPaymentMethod();
-    Instant getOrderDate();
+    String getOrderDate();
 }

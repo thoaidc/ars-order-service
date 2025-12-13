@@ -37,7 +37,7 @@ import java.util.List;
                         @ColumnResult(name = "status", type = String.class),
                         @ColumnResult(name = "paymentStatus", type = String.class),
                         @ColumnResult(name = "paymentMethod", type = String.class),
-                        @ColumnResult(name = "orderDate", type = Instant.class)
+                        @ColumnResult(name = "orderDate", type = String.class)
                     }
                 )
             }
