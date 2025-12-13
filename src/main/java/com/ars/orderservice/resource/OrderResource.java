@@ -1,7 +1,6 @@
 package com.ars.orderservice.resource;
 
 import com.ars.orderservice.dto.request.OrderRequestDTO;
-import com.ars.orderservice.dto.request.SearchOrderForUserRequestDTO;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.service.OrderService;
 import com.dct.model.dto.response.BaseResponseDTO;
@@ -25,23 +24,33 @@ public class OrderResource {
     }
 
     @GetMapping
-    public BaseResponseDTO getOrderWithPagingForUser(@ModelAttribute SearchOrderForUserRequestDTO requestDTO) {
-        return orderService.getOrderWithPagingForUser(requestDTO);
+    public BaseResponseDTO getOrderWithPaging(@ModelAttribute SearchOrderRequestDTO requestDTO) {
+        return orderService.getOrderWithPaging(requestDTO);
     }
 
     @GetMapping("/{orderId}")
+    public BaseResponseDTO getOrderDetail(@PathVariable Integer orderId) {
+        return orderService.getOrderDetail(orderId);
+    }
+
+    @GetMapping("/by-user")
+    public BaseResponseDTO getOrderWithPagingForUser(@ModelAttribute SearchOrderRequestDTO requestDTO) {
+        return orderService.getOrderWithPagingForUser(requestDTO);
+    }
+
+    @GetMapping("/by-user/{orderId}")
     public BaseResponseDTO getOrderDetailForUser(@PathVariable Integer orderId) {
         return orderService.getOrderDetailForUser(orderId);
     }
 
-    @GetMapping("/shops")
+    @GetMapping("/by-shop")
     public BaseResponseDTO getOrderWithPagingForShop(@ModelAttribute SearchOrderRequestDTO requestDTO) {
-        return orderService.getOrderWithPaging(requestDTO);
+        return orderService.getOrderWithPagingForShop(requestDTO);
     }
 
-    @GetMapping("/shops/{orderId}")
+    @GetMapping("/by-shop/{orderId}")
     public BaseResponseDTO getOrderDetailForShop(@PathVariable Integer orderId) {
-        return orderService.getOrderDetail(orderId);
+        return orderService.getOrderDetailForShop(orderId);
     }
 
     @PostMapping

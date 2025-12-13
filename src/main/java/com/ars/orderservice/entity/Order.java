@@ -1,19 +1,49 @@
 package com.ars.orderservice.entity;
 
+import com.ars.orderservice.dto.response.OrderDTO;
 import com.dct.config.entity.AbstractAuditingEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.ConstructorResult;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.SqlResultSetMapping;
+import jakarta.persistence.SqlResultSetMappings;
 import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "orders")
+@SqlResultSetMappings(
+    {
+        @SqlResultSetMapping(
+            name = "orderGetWithPaging",
+            classes = {
+                @ConstructorResult(
+                    targetClass = OrderDTO.class,
+                    columns = {
+                        @ColumnResult(name = "id", type = Integer.class),
+                        @ColumnResult(name = "code", type = String.class),
+                        @ColumnResult(name = "customerName", type = String.class),
+                        @ColumnResult(name = "customerId", type = Integer.class),
+                        @ColumnResult(name = "quantity", type = Integer.class),
+                        @ColumnResult(name = "totalAmount", type = BigDecimal.class),
+                        @ColumnResult(name = "status", type = String.class),
+                        @ColumnResult(name = "paymentStatus", type = String.class),
+                        @ColumnResult(name = "paymentMethod", type = String.class),
+                        @ColumnResult(name = "orderDate", type = Instant.class)
+                    }
+                )
+            }
+        )
+    }
+)
 @SuppressWarnings("unused")
 public class Order extends AbstractAuditingEntity {
     @Column(name = "code", length = 50, nullable = false)

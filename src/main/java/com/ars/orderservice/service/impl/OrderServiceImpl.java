@@ -1,17 +1,19 @@
 package com.ars.orderservice.service.impl;
 
 import com.ars.orderservice.constants.OrderConstants;
+import com.ars.orderservice.dto.mapping.OrderResponse;
 import com.ars.orderservice.dto.request.CheckOrderInfoRequestDTO;
 import com.ars.orderservice.dto.request.OrderRequestDTO;
-import com.ars.orderservice.dto.request.SearchOrderForUserRequestDTO;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.dto.response.CheckOrderInfoResponseDTO;
+import com.ars.orderservice.dto.response.OrderDTO;
 import com.ars.orderservice.entity.Order;
 import com.ars.orderservice.entity.OrderProduct;
 import com.ars.orderservice.entity.OutBox;
 import com.ars.orderservice.entity.SubOrder;
 import com.ars.orderservice.repository.OrderRepository;
 import com.ars.orderservice.repository.OutBoxRepository;
+import com.ars.orderservice.repository.SubOrderRepository;
 import com.ars.orderservice.service.OrderService;
 import com.dct.config.common.HttpClientUtils;
 import com.dct.model.common.DateUtils;
@@ -25,6 +27,7 @@ import com.dct.model.event.PaymentSuccessEvent;
 import com.dct.model.exception.BaseBadRequestException;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -46,13 +50,15 @@ public class OrderServiceImpl implements OrderService {
     private final RestTemplate restTemplate;
     private final OrderRepository orderRepository;
     private final OutBoxRepository outBoxRepository;
+    private final SubOrderRepository subOrderRepository;
 
     public OrderServiceImpl(RestTemplate restTemplate,
                             OrderRepository orderRepository,
-                            OutBoxRepository outBoxRepository) {
+                            OutBoxRepository outBoxRepository, SubOrderRepository subOrderRepository) {
         this.restTemplate = restTemplate;
         this.orderRepository = orderRepository;
         this.outBoxRepository = outBoxRepository;
+        this.subOrderRepository = subOrderRepository;
     }
 
     @Override
@@ -247,12 +253,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public BaseResponseDTO getOrderWithPaging(SearchOrderRequestDTO requestDTO) {
-        return null;
+        Page<OrderDTO> orderPage = orderRepository.getOrderWithPaging(requestDTO);
+        return BaseResponseDTO.builder().total(orderPage.getTotalElements()).ok(orderPage.getContent());
     }
 
     @Override
-    public BaseResponseDTO getOrderWithPagingForUser(SearchOrderForUserRequestDTO requestDTO) {
-        return null;
+    public BaseResponseDTO getOrderWithPagingForUser(SearchOrderRequestDTO request) {
+        Page<OrderResponse> page = orderRepository.getOrderWithPagingForUser(request.getUserId(), request.getPageable());
+        return BaseResponseDTO.builder().total(page.getTotalElements()).ok(page.getContent());
+    }
+
+    @Override
+    public BaseResponseDTO getOrderWithPagingForShop(SearchOrderRequestDTO requestDTO) {
+        Page<OrderDTO> orderPage = subOrderRepository.getSubOrderWithPaging(requestDTO);
+        return BaseResponseDTO.builder().total(orderPage.getTotalElements()).ok(orderPage.getContent());
     }
 
     @Override
@@ -266,14 +280,41 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public BaseResponseDTO getOrderDetailForShop(Integer orderId) {
+        return null;
+    }
+
+    @Override
     @Transactional
     public void orderCompletion(PaymentSuccessEvent paymentSuccessEvent) {
-        orderRepository.updateOrderStatusById(paymentSuccessEvent.getOrderId(), OrderConstants.Status.COMPLETED);
+        Optional<Order> orderOptional = orderRepository.findById(paymentSuccessEvent.getOrderId());
+
+        if (orderOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order not found - ID: " + paymentSuccessEvent.getOrderId());
+        }
+
+        Order order = orderOptional.get();
+        order.setStatus(OrderConstants.Status.COMPLETED);
+        order.setPaymentStatus(OrderConstants.PaymentStatus.PAID);
+        order.getSubOrders().forEach(subOrder -> {
+            subOrder.setStatus(OrderConstants.Status.COMPLETED);
+            subOrder.setPaymentStatus(OrderConstants.PaymentStatus.PAID);
+        });
+        orderRepository.save(order);
     }
 
     @Override
     @Transactional
     public void cancelOrder(PaymentFailureEvent paymentFailureEvent) {
-        orderRepository.updateOrderStatusById(paymentFailureEvent.getOrderId(), OrderConstants.Status.FAILED);
+        Optional<Order> orderOptional = orderRepository.findById(paymentFailureEvent.getOrderId());
+
+        if (orderOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order not found - ID: " + paymentFailureEvent.getOrderId());
+        }
+
+        Order order = orderOptional.get();
+        order.setStatus(OrderConstants.Status.FAILED);
+        order.getSubOrders().forEach(subOrder -> subOrder.setStatus(OrderConstants.Status.FAILED));
+        orderRepository.save(order);
     }
 }
