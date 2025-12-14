@@ -331,6 +331,7 @@ public class OrderServiceImpl implements OrderService {
                     return orderProductDTO;
                 }).toList();
         orderDetail.setProducts(orderProducts);
+        orderDetail.setOrderDate(DateUtils.ofInstant(order.getCreatedDate()).toString());
         return BaseResponseDTO.builder().ok(orderDetail);
     }
 
@@ -343,17 +344,18 @@ public class OrderServiceImpl implements OrderService {
         }
 
         SubOrder subOrder = subOrderOptional.get();
-        OrderDetailDTO orderDetail = new OrderDetailDTO();
-        BeanUtils.copyProperties(subOrder, orderDetail, "order", "products");
+        OrderDetailDTO subOrderDetail = new OrderDetailDTO();
+        BeanUtils.copyProperties(subOrder, subOrderDetail, "order", "products");
         List<OrderProductResponse> orderProductResponses = orderProductRepository.findAllOrderProductBySubOrderId(orderId);
-        List<OrderDTO.OrderProductDTO> orderProducts = orderProductResponses.stream()
+        List<OrderDTO.OrderProductDTO> subOrderProducts = orderProductResponses.stream()
                 .map(orderProductResponse -> {
                     OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
                     BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
                     return orderProductDTO;
                 }).toList();
-        orderDetail.setProducts(orderProducts);
-        return BaseResponseDTO.builder().ok(orderDetail);
+        subOrderDetail.setOrderDate(DateUtils.ofInstant(subOrder.getCreatedDate()).toString());
+        subOrderDetail.setProducts(subOrderProducts);
+        return BaseResponseDTO.builder().ok(subOrderDetail);
     }
 
     @Override
