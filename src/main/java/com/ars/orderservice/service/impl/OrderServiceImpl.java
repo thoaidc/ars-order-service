@@ -359,6 +359,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public BaseResponseDTO getShopIdsByOrderId(Integer orderId) {
+        List<Integer> shopIds = subOrderRepository.findShopIdsByOrderId(orderId);
+        return BaseResponseDTO.builder().ok(shopIds);
+    }
+
+    @Override
     @Transactional
     public void orderCompletion(PaymentSuccessEvent paymentSuccessEvent) {
         Optional<Order> orderOptional = orderRepository.findById(paymentSuccessEvent.getOrderId());
