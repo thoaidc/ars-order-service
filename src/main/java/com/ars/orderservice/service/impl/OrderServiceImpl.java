@@ -20,11 +20,14 @@ import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.repository.SubOrderRepository;
 import com.ars.orderservice.service.OrderService;
 import com.dct.config.common.HttpClientUtils;
+
 import com.dct.model.common.DateUtils;
 import com.dct.model.common.JsonUtils;
 import com.dct.model.constants.BaseDatetimeConstants;
 import com.dct.model.constants.BaseOutBoxConstants;
+import com.dct.model.constants.BasePaymentConstants;
 import com.dct.model.dto.response.BaseResponseDTO;
+import com.dct.model.event.ChangeBalanceAmountEvent;
 import com.dct.model.event.OrderCreatedEvent;
 import com.dct.model.event.PaymentFailureEvent;
 import com.dct.model.event.PaymentSuccessEvent;
@@ -359,12 +362,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public BaseResponseDTO getShopIdsByOrderId(Integer orderId) {
-        List<Integer> shopIds = subOrderRepository.findShopIdsByOrderId(orderId);
-        return BaseResponseDTO.builder().ok(shopIds);
-    }
-
-    @Override
     @Transactional
     public void orderCompletion(PaymentSuccessEvent paymentSuccessEvent) {
         Optional<Order> orderOptional = orderRepository.findById(paymentSuccessEvent.getOrderId());
@@ -380,7 +377,41 @@ public class OrderServiceImpl implements OrderService {
             subOrder.setStatus(OrderConstants.Status.COMPLETED);
             subOrder.setPaymentStatus(OrderConstants.PaymentStatus.PAID);
         });
+        updateBalanceForShops(order.getSubOrders());
         orderRepository.save(order);
+    }
+
+    private void updateBalanceForShops(List<SubOrder> subOrders) {
+        List<OutBox> outBoxes = new ArrayList<>();
+
+        subOrders.forEach(subOrder -> {
+            BigDecimal platformFeeAmount = subOrder.getTotalAmount().multiply(OrderConstants.PLATFORM_FEE_FACTOR);
+            platformFeeAmount = platformFeeAmount.setScale(OrderConstants.SCALE_NUMBER, RoundingMode.HALF_UP);
+            ChangeBalanceAmountEvent changeBalanceAmountForShopEvent = new ChangeBalanceAmountEvent();
+            changeBalanceAmountForShopEvent.setAmount(subOrder.getTotalAmount().subtract(platformFeeAmount));
+            changeBalanceAmountForShopEvent.setRefId(subOrder.getShopId());
+            changeBalanceAmountForShopEvent.setType(BasePaymentConstants.BalanceType.SHOP);
+            changeBalanceAmountForShopEvent.setDescription("Cong tien cho don hang: " + subOrder.getCode());
+            ChangeBalanceAmountEvent changeBalanceAmountForSystemEvent = new ChangeBalanceAmountEvent();
+            changeBalanceAmountForSystemEvent.setAmount(platformFeeAmount);
+            changeBalanceAmountForSystemEvent.setRefId(0); // System ID
+            changeBalanceAmountForSystemEvent.setType(BasePaymentConstants.BalanceType.SYSTEM);
+            changeBalanceAmountForSystemEvent.setDescription("Cong tien cho don hang: " + subOrder.getCode());
+            OutBox changeBalanceAmountForShopOutBoxEvent = new OutBox();
+            changeBalanceAmountForShopOutBoxEvent.setRefId(subOrder.getId());
+            changeBalanceAmountForShopOutBoxEvent.setType(BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT);
+            changeBalanceAmountForShopOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
+            changeBalanceAmountForShopOutBoxEvent.setValue(JsonUtils.toJsonString(changeBalanceAmountForShopEvent));
+            OutBox changeBalanceAmountForSystemOutBoxEvent = new OutBox();
+            changeBalanceAmountForSystemOutBoxEvent.setRefId(subOrder.getId());
+            changeBalanceAmountForSystemOutBoxEvent.setType(BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT);
+            changeBalanceAmountForSystemOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
+            changeBalanceAmountForSystemOutBoxEvent.setValue(JsonUtils.toJsonString(changeBalanceAmountForSystemEvent));
+            outBoxes.add(changeBalanceAmountForShopOutBoxEvent);
+            outBoxes.add(changeBalanceAmountForSystemOutBoxEvent);
+        });
+
+        outBoxRepository.saveAll(outBoxes);
     }
 
     @Override

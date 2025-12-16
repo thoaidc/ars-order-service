@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface OutBoxRepository extends JpaRepository<OutBox, Integer> {
-    @Query(value = "SELECT * FROM outbox WHERE type = ?1 AND status = ?2 ORDER BY id DESC LIMIT 10", nativeQuery = true)
-    List<OutBox> findTopOutBoxesByTypeAndStatus(String type, String status);
+    @Query(value = "SELECT * FROM outbox WHERE status = ? ORDER BY id DESC LIMIT 10", nativeQuery = true)
+    List<OutBox> findTopOutBoxesByStatus(String status);
 }

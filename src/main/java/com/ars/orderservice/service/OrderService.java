@@ -14,7 +14,6 @@ public interface OrderService {
     BaseResponseDTO getOrderDetail(Integer orderId);
     BaseResponseDTO getOrderDetailForUser(Integer orderId);
     BaseResponseDTO getOrderDetailForShop(Integer orderId);
-    BaseResponseDTO getShopIdsByOrderId(Integer orderId);
     void orderCompletion(PaymentSuccessEvent paymentSuccessEvent);
     void cancelOrder(PaymentFailureEvent paymentFailureEvent);
 }

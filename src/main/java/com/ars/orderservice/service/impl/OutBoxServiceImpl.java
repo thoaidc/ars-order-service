@@ -5,6 +5,7 @@ import com.ars.orderservice.queue.publisher.KafkaProducer;
 import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.service.OutBoxService;
 import com.dct.model.constants.BaseOutBoxConstants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -27,19 +28,24 @@ public class OutBoxServiceImpl implements OutBoxService {
     @Override
     @Transactional
     public void processOutBoxEvent() {
-        List<OutBox> outBoxes = outBoxRepository.findTopOutBoxesByTypeAndStatus(
-            BaseOutBoxConstants.Type.ORDER_CREATED,
-            BaseOutBoxConstants.Status.PENDING
-        );
+        List<OutBox> outBoxes = outBoxRepository.findTopOutBoxesByStatus(BaseOutBoxConstants.Status.PENDING);
+        outBoxes = outBoxes.stream().filter(Objects::nonNull).toList();
 
         for (OutBox outBox : outBoxes) {
-            if (Objects.nonNull(outBox)) {
-                log.info("[SEND_EVENT_FROM_OUTBOX] - refId: {}, type: {}, content: {}",
-                    outBox.getRefId(), outBox.getType(), outBox.getValue()
-                );
-                kafkaProducer.sendMessageOrderCreated(outBox.getValue());
-                outBox.setStatus(BaseOutBoxConstants.Status.COMPLETION);
+            log.info("[SEND_EVENT_FROM_OUTBOX] - refId: {}, type: {}, content: {}",
+                outBox.getRefId(), outBox.getType(), outBox.getValue()
+            );
+
+            switch (outBox.getType()) {
+                case BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT:
+                    kafkaProducer.sendMessageChangeBalanceAmount(outBox.getValue());
+                    break;
+                case BaseOutBoxConstants.Type.ORDER_CREATED:
+                    kafkaProducer.sendMessageOrderCreated(outBox.getValue());
+                    break;
             }
+
+            outBox.setStatus(BaseOutBoxConstants.Status.COMPLETION);
         }
 
         outBoxRepository.saveAll(outBoxes);
