@@ -16,4 +16,5 @@ public interface OrderConstants {
 
     BigDecimal PLATFORM_FEE_FACTOR = new BigDecimal("0.05"); // 5% order total amount
     int SCALE_NUMBER = 0; // Round to zero decimal places
+    int SYSTEM_ACCOUNT_ID = 0;
 }

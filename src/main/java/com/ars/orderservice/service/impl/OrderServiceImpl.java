@@ -387,31 +387,35 @@ public class OrderServiceImpl implements OrderService {
         subOrders.forEach(subOrder -> {
             BigDecimal platformFeeAmount = subOrder.getTotalAmount().multiply(OrderConstants.PLATFORM_FEE_FACTOR);
             platformFeeAmount = platformFeeAmount.setScale(OrderConstants.SCALE_NUMBER, RoundingMode.HALF_UP);
-            ChangeBalanceAmountEvent changeBalanceAmountForShopEvent = new ChangeBalanceAmountEvent();
-            changeBalanceAmountForShopEvent.setAmount(subOrder.getTotalAmount().subtract(platformFeeAmount));
-            changeBalanceAmountForShopEvent.setRefId(subOrder.getShopId());
-            changeBalanceAmountForShopEvent.setType(BasePaymentConstants.BalanceType.SHOP);
-            changeBalanceAmountForShopEvent.setDescription("Cong tien cho don hang: " + subOrder.getCode());
-            ChangeBalanceAmountEvent changeBalanceAmountForSystemEvent = new ChangeBalanceAmountEvent();
-            changeBalanceAmountForSystemEvent.setAmount(platformFeeAmount);
-            changeBalanceAmountForSystemEvent.setRefId(0); // System ID
-            changeBalanceAmountForSystemEvent.setType(BasePaymentConstants.BalanceType.SYSTEM);
-            changeBalanceAmountForSystemEvent.setDescription("Cong tien cho don hang: " + subOrder.getCode());
-            OutBox changeBalanceAmountForShopOutBoxEvent = new OutBox();
-            changeBalanceAmountForShopOutBoxEvent.setRefId(subOrder.getId());
-            changeBalanceAmountForShopOutBoxEvent.setType(BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT);
-            changeBalanceAmountForShopOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
-            changeBalanceAmountForShopOutBoxEvent.setValue(JsonUtils.toJsonString(changeBalanceAmountForShopEvent));
-            OutBox changeBalanceAmountForSystemOutBoxEvent = new OutBox();
-            changeBalanceAmountForSystemOutBoxEvent.setRefId(subOrder.getId());
-            changeBalanceAmountForSystemOutBoxEvent.setType(BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT);
-            changeBalanceAmountForSystemOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
-            changeBalanceAmountForSystemOutBoxEvent.setValue(JsonUtils.toJsonString(changeBalanceAmountForSystemEvent));
-            outBoxes.add(changeBalanceAmountForShopOutBoxEvent);
-            outBoxes.add(changeBalanceAmountForSystemOutBoxEvent);
+            outBoxes.add(createChangeBalanceOutbox(subOrder, platformFeeAmount, BasePaymentConstants.BalanceType.SHOP));
+            outBoxes.add(createChangeBalanceOutbox(subOrder, platformFeeAmount, BasePaymentConstants.BalanceType.SYSTEM));
         });
 
         outBoxRepository.saveAll(outBoxes);
+    }
+
+    private OutBox createChangeBalanceOutbox(SubOrder order, BigDecimal platformFeeAmount, Integer type) {
+        ChangeBalanceAmountEvent changeBalanceAmountEvent = new ChangeBalanceAmountEvent();
+
+        switch (type) {
+            case BasePaymentConstants.BalanceType.SHOP:
+                changeBalanceAmountEvent.setAmount(order.getTotalAmount().subtract(platformFeeAmount));
+                changeBalanceAmountEvent.setReceiverId(order.getShopId());
+                break;
+            case BasePaymentConstants.BalanceType.SYSTEM:
+                changeBalanceAmountEvent.setAmount(platformFeeAmount);
+                changeBalanceAmountEvent.setReceiverId(OrderConstants.SYSTEM_ACCOUNT_ID);
+        }
+
+        changeBalanceAmountEvent.setRefId(order.getId());
+        changeBalanceAmountEvent.setType(type);
+        changeBalanceAmountEvent.setDescription("Cong tien don hang: " + order.getCode());
+        OutBox changeBalanceAmountOutBoxEvent = new OutBox();
+        changeBalanceAmountOutBoxEvent.setRefId(changeBalanceAmountEvent.getRefId());
+        changeBalanceAmountOutBoxEvent.setType(BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT);
+        changeBalanceAmountOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
+        changeBalanceAmountOutBoxEvent.setValue(JsonUtils.toJsonString(changeBalanceAmountEvent));
+        return changeBalanceAmountOutBoxEvent;
     }
 
     @Override
