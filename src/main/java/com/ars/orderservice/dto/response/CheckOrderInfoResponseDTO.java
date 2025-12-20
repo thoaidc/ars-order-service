@@ -3,6 +3,7 @@ package com.ars.orderservice.dto.response;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class CheckOrderInfoResponseDTO {
     private List<VoucherDTO> vouchers = new ArrayList<>();
@@ -150,7 +151,7 @@ public class CheckOrderInfoResponseDTO {
     }
 
     public List<VoucherDTO> getVouchers() {
-        return vouchers;
+        return Optional.ofNullable(vouchers).orElseGet(ArrayList::new);
     }
 
     public void setVouchers(List<VoucherDTO> vouchers) {
