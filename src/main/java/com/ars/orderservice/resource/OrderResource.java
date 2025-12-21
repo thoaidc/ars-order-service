@@ -53,6 +53,16 @@ public class OrderResource {
         return orderService.getOrderDetailForShop(orderId);
     }
 
+    @GetMapping("/today")
+    public BaseResponseDTO getTotalOrderTodayForAdmin() {
+        return orderService.getTotalOrderToday(true);
+    }
+
+    @GetMapping("/today/by-shop")
+    public BaseResponseDTO getTotalOrderTodayForShop() {
+        return orderService.getTotalOrderToday(false);
+    }
+
     @PostMapping
     public BaseResponseDTO createOrder(@Valid @RequestBody OrderRequestDTO requestDTO) {
         return orderService.createOrder(requestDTO);

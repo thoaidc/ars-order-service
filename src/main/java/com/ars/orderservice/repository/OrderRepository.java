@@ -26,4 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, OrderRep
         nativeQuery = true
     )
     Page<OrderResponse> getOrderWithPagingForUser(Integer userId, Pageable pageable);
+
+    @Query(value = "SELECT COUNT(*) FROM orders WHERE created_date >= CURDATE() ", nativeQuery = true)
+    long getTotalOrdersToday();
 }

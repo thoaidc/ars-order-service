@@ -19,6 +19,7 @@ import com.ars.orderservice.repository.OrderRepository;
 import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.repository.SubOrderRepository;
 import com.ars.orderservice.service.OrderService;
+import com.dct.config.common.Common;
 import com.dct.config.common.HttpClientUtils;
 
 import com.dct.model.common.DateUtils;
@@ -26,6 +27,7 @@ import com.dct.model.common.JsonUtils;
 import com.dct.model.constants.BaseDatetimeConstants;
 import com.dct.model.constants.BaseOutBoxConstants;
 import com.dct.model.constants.BasePaymentConstants;
+import com.dct.model.dto.auth.BaseUserDTO;
 import com.dct.model.dto.response.BaseResponseDTO;
 import com.dct.model.event.ChangeBalanceAmountEvent;
 import com.dct.model.event.OrderCreatedEvent;
@@ -359,6 +361,17 @@ public class OrderServiceImpl implements OrderService {
         subOrderDetail.setOrderDate(DateUtils.ofInstant(subOrder.getCreatedDate()).toString());
         subOrderDetail.setProducts(subOrderProducts);
         return BaseResponseDTO.builder().ok(subOrderDetail);
+    }
+
+    @Override
+    public BaseResponseDTO getTotalOrderToday(boolean forAdmin) {
+        BaseUserDTO userDTO = Common.getUserWithAuthorities();
+
+        if (forAdmin) {
+            return BaseResponseDTO.builder().ok(orderRepository.getTotalOrdersToday());
+        } else {
+            return BaseResponseDTO.builder().ok(subOrderRepository.getTotalOrdersTodayByShopId(userDTO.getShopId()));
+        }
     }
 
     @Override
