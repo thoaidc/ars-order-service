@@ -3,6 +3,7 @@ package com.ars.orderservice.service.impl;
 import com.ars.orderservice.constants.OrderConstants;
 import com.ars.orderservice.dto.mapping.OrderProductResponse;
 import com.ars.orderservice.dto.mapping.OrderResponse;
+import com.ars.orderservice.dto.mapping.OrderSalesMapping;
 import com.ars.orderservice.dto.request.CheckOrderInfoRequestDTO;
 import com.ars.orderservice.dto.request.OrderRequestDTO;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
@@ -372,6 +373,20 @@ public class OrderServiceImpl implements OrderService {
         } else {
             return BaseResponseDTO.builder().ok(subOrderRepository.getTotalOrdersTodayByShopId(userDTO.getShopId()));
         }
+    }
+
+    @Override
+    public BaseResponseDTO getTotalOrderSalesLastSevenDay(boolean forAdmin) {
+        BaseUserDTO userDTO = Common.getUserWithAuthorities();
+        List<OrderSalesMapping> orderSalesData;
+
+        if (forAdmin) {
+            orderSalesData = orderRepository.getTotalOrderSalesToDay();
+        } else {
+            orderSalesData = subOrderRepository.getTotalOrderSalesToDay(userDTO.getShopId());
+        }
+
+        return BaseResponseDTO.builder().ok(orderSalesData);
     }
 
     @Override

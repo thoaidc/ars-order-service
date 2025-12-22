@@ -1,13 +1,16 @@
 package com.ars.orderservice.repository;
 
 import com.ars.orderservice.dto.mapping.OrderResponse;
+import com.ars.orderservice.dto.mapping.OrderSalesMapping;
 import com.ars.orderservice.entity.Order;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -29,4 +32,17 @@ public interface OrderRepository extends JpaRepository<Order, Integer>, OrderRep
 
     @Query(value = "SELECT COUNT(*) FROM orders WHERE created_date >= CURDATE() ", nativeQuery = true)
     long getTotalOrdersToday();
+
+    @Query(value = """
+            SELECT
+                DATE(created_date) AS date,
+                SUM(amount) AS amount
+            FROM orders
+            WHERE status = 'SUCCESS' AND created_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+            GROUP BY DATE(created_date)
+            ORDER BY date
+        """,
+        nativeQuery = true
+    )
+    List<OrderSalesMapping> getTotalOrderSalesToDay();
 }

@@ -63,6 +63,16 @@ public class OrderResource {
         return orderService.getTotalOrderToday(false);
     }
 
+    @GetMapping("/last-seven-day/by-shop")
+    public BaseResponseDTO getTotalOrdersLastSevenDayForShop() {
+        return orderService.getTotalOrderSalesLastSevenDay(false);
+    }
+
+    @GetMapping("/last-seven-day/by-admin")
+    public BaseResponseDTO getTotalOrdersLastSevenDayForAdmin() {
+        return orderService.getTotalOrderSalesLastSevenDay(true);
+    }
+
     @PostMapping
     public BaseResponseDTO createOrder(@Valid @RequestBody OrderRequestDTO requestDTO) {
         return orderService.createOrder(requestDTO);
