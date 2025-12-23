@@ -1,6 +1,8 @@
 package com.ars.orderservice.queue.publisher;
 
+import com.dct.model.common.JsonUtils;
 import com.dct.model.config.properties.KafkaProperties;
+import com.dct.model.event.ChangeBalanceAmountEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,8 @@ public class KafkaProducer {
 
     public void sendMessageChangeBalanceAmount(String event) {
         log.info("[SEND_CHANGE_BALANCE_AMOUNT_TOPIC] - {}", event);
-        kafkaTemplate.send(kafkaProperties.getTopics().getChangeBalanceAmount(), event);
+        ChangeBalanceAmountEvent changeBalanceAmountEvent = JsonUtils.parseJson(event, ChangeBalanceAmountEvent.class);
+        String partitionKey = String.valueOf(changeBalanceAmountEvent.getReceiverId());
+        kafkaTemplate.send(kafkaProperties.getTopics().getChangeBalanceAmount(), partitionKey, event);
     }
 }

@@ -413,8 +413,8 @@ public class OrderServiceImpl implements OrderService {
         List<OutBox> outBoxes = new ArrayList<>();
 
         subOrders.forEach(subOrder -> {
-            BigDecimal platformFeeAmount = subOrder.getTotalAmount().multiply(OrderConstants.PLATFORM_FEE_FACTOR);
-            platformFeeAmount = platformFeeAmount.setScale(OrderConstants.SCALE_NUMBER, RoundingMode.HALF_UP);
+            BigDecimal platformFeeAmount = subOrder.getTotalAmount().multiply(BasePaymentConstants.PLATFORM_FEE_FACTOR);
+            platformFeeAmount = platformFeeAmount.setScale(BasePaymentConstants.SCALE_NUMBER, RoundingMode.HALF_UP);
             outBoxes.add(createChangeBalanceOutbox(subOrder, platformFeeAmount, BasePaymentConstants.BalanceType.SHOP));
             outBoxes.add(createChangeBalanceOutbox(subOrder, platformFeeAmount, BasePaymentConstants.BalanceType.SYSTEM));
         });
@@ -427,12 +427,14 @@ public class OrderServiceImpl implements OrderService {
 
         switch (type) {
             case BasePaymentConstants.BalanceType.SHOP:
-                changeBalanceAmountEvent.setAmount(order.getTotalAmount().subtract(platformFeeAmount));
+                changeBalanceAmountEvent.setAmount(order.getTotalAmount());
+                changeBalanceAmountEvent.setSenderId(BasePaymentConstants.SYSTEM_ACCOUNT_ID);
                 changeBalanceAmountEvent.setReceiverId(order.getShopId());
                 break;
             case BasePaymentConstants.BalanceType.SYSTEM:
                 changeBalanceAmountEvent.setAmount(platformFeeAmount);
-                changeBalanceAmountEvent.setReceiverId(OrderConstants.SYSTEM_ACCOUNT_ID);
+                changeBalanceAmountEvent.setSenderId(order.getShopId());
+                changeBalanceAmountEvent.setReceiverId(BasePaymentConstants.SYSTEM_ACCOUNT_ID);
         }
 
         changeBalanceAmountEvent.setRefId(order.getId());

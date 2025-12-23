@@ -30,12 +30,14 @@ public class OutBoxServiceImpl implements OutBoxService {
     public void processOutBoxEvent() {
         List<OutBox> outBoxes = outBoxRepository.findTopOutBoxesByStatus(BaseOutBoxConstants.Status.PENDING);
         outBoxes = outBoxes.stream().filter(Objects::nonNull).toList();
+        outBoxes.forEach(this::sendOutBoxMessage);
+        outBoxRepository.saveAll(outBoxes);
+    }
 
-        for (OutBox outBox : outBoxes) {
-            log.info("[SEND_EVENT_FROM_OUTBOX] - refId: {}, type: {}, content: {}",
-                outBox.getRefId(), outBox.getType(), outBox.getValue()
-            );
+    private void sendOutBoxMessage(OutBox outBox) {
+        log.info("[SEND_EVENT_FROM_OUTBOX] - refId: {}, type: {}", outBox.getRefId(), outBox.getType());
 
+        try {
             switch (outBox.getType()) {
                 case BaseOutBoxConstants.Type.CHANGE_BALANCE_AMOUNT:
                     kafkaProducer.sendMessageChangeBalanceAmount(outBox.getValue());
@@ -46,8 +48,10 @@ public class OutBoxServiceImpl implements OutBoxService {
             }
 
             outBox.setStatus(BaseOutBoxConstants.Status.COMPLETION);
+        } catch (Exception e) {
+            log.error("[SEND_OUTBOX_MESSAGE_ERROR] - refId: {}, type: {}", outBox.getRefId(), outBox.getType(), e);
+            outBox.setStatus(BaseOutBoxConstants.Status.FAILED);
+            outBox.setError(e.getMessage());
         }
-
-        outBoxRepository.saveAll(outBoxes);
     }
 }
