@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Integer> {
     @Query(value = """
-            SELECT id, note, data, amount, discount,
+            SELECT id, note, data,
                    total_amount as totalAmount,
                    sub_order_id as subOrderId,
                    order_id as orderId,
@@ -27,7 +27,7 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Inte
     List<OrderProductResponse> findAllOrderProductByOrderId(Integer orderId);
 
     @Query(value = """
-            SELECT id, note, data, amount, discount,
+            SELECT id, note, data,
                    total_amount as totalAmount,
                    sub_order_id as subOrderId,
                    order_id as orderId,
