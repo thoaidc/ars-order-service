@@ -109,6 +109,7 @@ spring:
       order-payment-successful: order-payment-successful
       order-payment-failure: order-payment-failure
       change-balance-amount: change-balance-amount
+      update-product-sale-quantity: update-product-sale-quantity
 
 server:
   servlet:

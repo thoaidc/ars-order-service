@@ -33,4 +33,9 @@ public class KafkaProducer {
         String partitionKey = String.valueOf(changeBalanceAmountEvent.getReceiverId());
         kafkaTemplate.send(kafkaProperties.getTopics().getChangeBalanceAmount(), partitionKey, event);
     }
+
+    public void sendMessageUpdateProductSaleQuantity(Integer productId, String event) {
+        log.info("[SEND_UPDATE_PRODUCT_SALE_QUANTITY_TOPIC] - productId: {}, event: {}", productId, event);
+        kafkaTemplate.send(kafkaProperties.getTopics().getUpdateProductSaleQuantity(), String.valueOf(productId), event);
+    }
 }

@@ -45,6 +45,9 @@ public class OutBoxServiceImpl implements OutBoxService {
                 case BaseOutBoxConstants.Type.ORDER_CREATED:
                     kafkaProducer.sendMessageOrderCreated(outBox.getValue());
                     break;
+                case BaseOutBoxConstants.Type.UPDATE_PRODUCT_SALE_QUANTITY:
+                    kafkaProducer.sendMessageUpdateProductSaleQuantity(outBox.getRefId(), outBox.getValue());
+                    break;
             }
 
             outBox.setStatus(BaseOutBoxConstants.Status.COMPLETION);

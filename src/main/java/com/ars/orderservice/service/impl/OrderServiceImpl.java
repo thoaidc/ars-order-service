@@ -34,6 +34,7 @@ import com.dct.model.event.ChangeBalanceAmountEvent;
 import com.dct.model.event.OrderCreatedEvent;
 import com.dct.model.event.PaymentFailureEvent;
 import com.dct.model.event.PaymentSuccessEvent;
+import com.dct.model.event.UpdateProductSaleQuantityEvent;
 import com.dct.model.exception.BaseBadRequestException;
 
 import org.springframework.beans.BeanUtils;
@@ -405,8 +406,25 @@ public class OrderServiceImpl implements OrderService {
             subOrder.setStatus(OrderConstants.Status.COMPLETED);
             subOrder.setPaymentStatus(OrderConstants.PaymentStatus.PAID);
         });
+        updateProductSaleQuantity(order.getSubOrders());
         updateBalanceForShops(order.getSubOrders());
         orderRepository.save(order);
+    }
+
+    private void updateProductSaleQuantity(List<SubOrder> subOrders) {
+        List<OrderProduct> orderProducts = subOrders.stream()
+                .flatMap(subOrder -> subOrder.getProducts().stream())
+                .toList();
+        List<OutBox> outBoxes = orderProducts.stream().map(orderProduct -> {
+            UpdateProductSaleQuantityEvent event = new UpdateProductSaleQuantityEvent(orderProduct.getProductId(), 1);
+            OutBox changeBalanceAmountOutBoxEvent = new OutBox();
+            changeBalanceAmountOutBoxEvent.setRefId(orderProduct.getProductId());
+            changeBalanceAmountOutBoxEvent.setType(BaseOutBoxConstants.Type.UPDATE_PRODUCT_SALE_QUANTITY);
+            changeBalanceAmountOutBoxEvent.setStatus(BaseOutBoxConstants.Status.PENDING);
+            changeBalanceAmountOutBoxEvent.setValue(JsonUtils.toJsonString(event));
+            return changeBalanceAmountOutBoxEvent;
+        }).toList();
+        outBoxRepository.saveAll(outBoxes);
     }
 
     private void updateBalanceForShops(List<SubOrder> subOrders) {
