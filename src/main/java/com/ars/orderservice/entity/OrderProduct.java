@@ -42,7 +42,7 @@ public class OrderProduct extends AbstractAuditingEntity {
     @Column(name = "note", length = 500)
     private String note;
 
-    @Column(name = "data", length = 2000)
+    @Column(name = "data")
     private String data;
 
     @Column(name = "total_amount", precision = 21, scale = 6, nullable = false)
