@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS cart_product;
 CREATE TABLE cart_product (
     id INT AUTO_INCREMENT PRIMARY KEY,
     cart_id INT NOT NULL,
+    shop_id INT NOT NULL,
     product_id INT NOT NULL,
     product_name VARCHAR(255) NOT NULL,
     thumbnail VARCHAR(255) NOT NULL,

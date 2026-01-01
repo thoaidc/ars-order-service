@@ -12,6 +12,7 @@ import java.util.List;
 public interface CartProductRepository extends JpaRepository<CartProduct, Integer> {
     @Query(value = """
             SELECT cp.id, cp.product_id as productId,
+                cp.shop_id as shopId,
                 cp.cart_id as cartId,
                 cp.product_name as productName,
                 cp.thumbnail, cp.price, cp.data

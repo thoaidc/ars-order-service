@@ -51,6 +51,8 @@ public class CartDTO {
         private Integer id;
         private Integer cartId;
         @NotNull
+        private Integer shopId;
+        @NotNull
         private Integer productId;
         @NotBlank
         private String productName;
@@ -66,6 +68,14 @@ public class CartDTO {
 
         public void setCartId(Integer cartId) {
             this.cartId = cartId;
+        }
+
+        public Integer getShopId() {
+            return shopId;
+        }
+
+        public void setShopId(Integer shopId) {
+            this.shopId = shopId;
         }
 
         public Integer getProductId() {

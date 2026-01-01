@@ -20,6 +20,9 @@ public class CartProduct extends AbstractAuditingEntity {
     @JsonIgnore
     private Cart cart;
 
+    @Column(name = "shop_id", nullable = false)
+    private Integer shopId;
+
     @Column(name = "product_id", nullable = false)
     private Integer productId;
 
@@ -65,6 +68,14 @@ public class CartProduct extends AbstractAuditingEntity {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public Integer getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(Integer shopId) {
+        this.shopId = shopId;
     }
 
     public Integer getProductId() {

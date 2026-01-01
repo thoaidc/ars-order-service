@@ -1,6 +1,7 @@
 package com.ars.orderservice.service.impl;
 
 import com.ars.orderservice.constants.OrderConstants;
+import com.ars.orderservice.constants.VoucherConstants;
 import com.ars.orderservice.dto.mapping.OrderProductResponse;
 import com.ars.orderservice.dto.mapping.OrderResponse;
 import com.ars.orderservice.dto.mapping.OrderSalesMapping;
@@ -209,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
     private BigDecimal calculateDiscount(CheckOrderInfoResponseDTO.VoucherDTO voucher, BigDecimal orderAmount) {
         BigDecimal voucherValue = voucher.getValue();
 
-        if (Objects.equals(voucher.getType(), 2)) {
+        if (Objects.equals(voucher.getType(), VoucherConstants.Type.BY_PERCENTAGE)) {
             return orderAmount.multiply(voucherValue).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
         }
 
@@ -237,11 +238,11 @@ public class OrderServiceImpl implements OrderService {
         int now = Integer.parseInt(nowStr);
 
         voucherDTOS.forEach(voucherDTO -> {
-            if (!Objects.equals(voucherDTO.getStatus(), 1)) {
+            if (!Objects.equals(voucherDTO.getStatus(), VoucherConstants.Status.ACTIVE)) {
                 throw new BaseBadRequestException(ENTITY_NAME, "Invalid voucher info, this voucher is not available");
             }
 
-            if (voucherDTO.getDateExpired() < now || voucherDTO.getDateStarted() > now) {
+            if (Objects.nonNull(voucherDTO.getDateExpired()) && voucherDTO.getDateExpired() < now) {
                 throw new BaseBadRequestException(ENTITY_NAME, "Voucher does not available in this time");
             }
         });
