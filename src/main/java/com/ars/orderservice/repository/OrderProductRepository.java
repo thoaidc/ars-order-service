@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderProductRepository extends JpaRepository<OrderProduct, Integer> {
@@ -41,4 +42,7 @@ public interface OrderProductRepository extends JpaRepository<OrderProduct, Inte
         nativeQuery = true
     )
     List<OrderProductResponse> findAllOrderProductBySubOrderId(Integer subOrderId);
+
+    @Query(value = "SELECT id, product_id, data FROM order_product WHERE id = ?", nativeQuery = true)
+    Optional<OrderProductResponse> findOrderProductData(Integer orderProductId);
 }

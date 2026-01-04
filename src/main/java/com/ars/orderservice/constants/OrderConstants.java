@@ -11,4 +11,9 @@ public interface OrderConstants {
         String UNPAID = "UNPAID";
         String PAID = "PAID";
     }
+
+    interface Upload {
+        String PREFIX = "/uploads/orders/products/";
+        String LOCATION = "opt/uploads/orders/products/";
+    }
 }

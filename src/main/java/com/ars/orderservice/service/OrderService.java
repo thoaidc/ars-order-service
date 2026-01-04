@@ -5,9 +5,12 @@ import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.dct.model.dto.response.BaseResponseDTO;
 import com.dct.model.event.PaymentFailureEvent;
 import com.dct.model.event.PaymentSuccessEvent;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 
 public interface OrderService {
     BaseResponseDTO createOrder(OrderRequestDTO requestDTO);
+    ResponseEntity<Resource> getOrderProductFile(Integer orderProductId);
     BaseResponseDTO getOrderWithPaging(SearchOrderRequestDTO requestDTO);
     BaseResponseDTO getOrderWithPagingForUser(SearchOrderRequestDTO requestDTO);
     BaseResponseDTO getOrderWithPagingForShop(SearchOrderRequestDTO requestDTO);

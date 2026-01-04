@@ -1,5 +1,6 @@
 package com.ars.orderservice.service.impl;
 
+import com.ars.orderservice.apicient.ProductServiceClient;
 import com.ars.orderservice.constants.OrderConstants;
 import com.ars.orderservice.constants.VoucherConstants;
 import com.ars.orderservice.dto.mapping.OrderProductResponse;
@@ -11,6 +12,7 @@ import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.dto.response.CheckOrderInfoResponseDTO;
 import com.ars.orderservice.dto.response.OrderDTO;
 import com.ars.orderservice.dto.response.OrderDetailDTO;
+import com.ars.orderservice.dto.response.OrderProductDataDTO;
 import com.ars.orderservice.dto.response.SubOrderDetailDTO;
 import com.ars.orderservice.entity.Order;
 import com.ars.orderservice.entity.OrderProduct;
@@ -21,9 +23,10 @@ import com.ars.orderservice.repository.OrderRepository;
 import com.ars.orderservice.repository.OutBoxRepository;
 import com.ars.orderservice.repository.SubOrderRepository;
 import com.ars.orderservice.service.OrderService;
-import com.dct.config.common.Common;
-import com.dct.config.common.HttpClientUtils;
 
+import com.dct.config.common.Common;
+import com.dct.config.common.FileUtils;
+import com.dct.config.common.HttpClientUtils;
 import com.dct.model.common.DateUtils;
 import com.dct.model.common.JsonUtils;
 import com.dct.model.constants.BaseDatetimeConstants;
@@ -39,14 +42,20 @@ import com.dct.model.event.UpdateProductSaleQuantityEvent;
 import com.dct.model.exception.BaseBadRequestException;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -66,17 +75,23 @@ public class OrderServiceImpl implements OrderService {
     private final OutBoxRepository outBoxRepository;
     private final SubOrderRepository subOrderRepository;
     private final OrderProductRepository orderProductRepository;
+    private final ProductServiceClient productServiceClient;
+    private final FileUtils fileUtils = new FileUtils();
 
     public OrderServiceImpl(RestTemplate restTemplate,
                             OrderRepository orderRepository,
                             OutBoxRepository outBoxRepository,
                             SubOrderRepository subOrderRepository,
-                            OrderProductRepository orderProductRepository) {
+                            OrderProductRepository orderProductRepository,
+                            ProductServiceClient productServiceClient) {
         this.restTemplate = restTemplate;
         this.orderRepository = orderRepository;
         this.outBoxRepository = outBoxRepository;
         this.subOrderRepository = subOrderRepository;
         this.orderProductRepository = orderProductRepository;
+        this.productServiceClient = productServiceClient;
+        this.fileUtils.setPrefixPath(OrderConstants.Upload.PREFIX);
+        this.fileUtils.setUploadDirectory(OrderConstants.Upload.LOCATION);
     }
 
     @Override
@@ -121,6 +136,37 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
         saveOutboxEvent(order, requestDTO);
         return BaseResponseDTO.builder().ok(order.getId());
+    }
+
+    @Override
+    public ResponseEntity<Resource> getOrderProductFile(Integer orderProductId) {
+        Optional<OrderProductResponse> orderProductOptional = orderProductRepository.findOrderProductData(orderProductId);
+
+        if (orderProductOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order product files not found");
+        }
+
+        OrderProductResponse orderProduct = orderProductOptional.get();
+        OrderProductDataDTO orderProductDataDTO = JsonUtils.parseJson(orderProduct.getData(), OrderProductDataDTO.class);
+
+        if (Objects.isNull(orderProductDataDTO) || !orderProductDataDTO.isCustomizable()) {
+            return productServiceClient.getProductOriginalFile(orderProduct.getProductId());
+        }
+
+        String prefixPath = OrderConstants.Upload.PREFIX;
+        String location = OrderConstants.Upload.LOCATION;
+        String filePath = location + orderProductDataDTO.getDesignFile().substring(prefixPath.length());
+        File file = new File(filePath);
+
+        if (!file.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new FileSystemResource(file);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .body(resource);
     }
 
     private void saveOutboxEvent(Order order, OrderRequestDTO request) {
