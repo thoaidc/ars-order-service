@@ -6,6 +6,8 @@ import com.ars.orderservice.service.OrderService;
 import com.dct.model.dto.response.BaseResponseDTO;
 
 import jakarta.validation.Valid;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +23,11 @@ public class OrderResource {
 
     public OrderResource(OrderService orderService) {
         this.orderService = orderService;
+    }
+
+    @GetMapping("/products/files/download/{orderProductId}")
+    public ResponseEntity<Resource> getOrderProductDesignFile(@PathVariable Integer orderProductId) {
+        return orderService.getOrderProductFile(orderProductId);
     }
 
     @GetMapping

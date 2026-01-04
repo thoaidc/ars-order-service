@@ -42,6 +42,7 @@ import com.dct.model.event.UpdateProductSaleQuantityEvent;
 import com.dct.model.exception.BaseBadRequestException;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -150,7 +151,17 @@ public class OrderServiceImpl implements OrderService {
         OrderProductDataDTO orderProductDataDTO = JsonUtils.parseJson(orderProduct.getData(), OrderProductDataDTO.class);
 
         if (Objects.isNull(orderProductDataDTO) || !orderProductDataDTO.isCustomizable()) {
-            return productServiceClient.getProductOriginalFile(orderProduct.getProductId());
+            ResponseEntity<byte[]> feignResponse = productServiceClient.getProductOriginalFile(orderProduct.getProductId());
+
+            if (feignResponse.getStatusCode().is2xxSuccessful() && feignResponse.getBody() != null) {
+                ByteArrayResource resource = new ByteArrayResource(feignResponse.getBody());
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType("application/zip"))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"product_design.zip\"")
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
         }
 
         String prefixPath = OrderConstants.Upload.PREFIX;
@@ -309,7 +320,14 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setShopId(product.getShopId());
                     orderProduct.setProductId(product.getProductId());
                     orderProduct.setNote(product.getNote());
-                    orderProduct.setData(product.getData());
+                    OrderProductDataDTO orderProductDataDTO = new OrderProductDataDTO();
+                    orderProductDataDTO.setSelectedOptions(product.getData());
+                    List<OrderProductDataDTO.Option> options = JsonUtils.parseJsonToList(
+                        product.getData(),
+                        OrderProductDataDTO.Option.class
+                    );
+                    orderProductDataDTO.setCustomizable(!options.isEmpty());
+                    orderProduct.setData(JsonUtils.toJsonString(orderProductDataDTO));
                     return orderProduct;
                 }).toList();
         subOrder.setProducts(orderProducts);
