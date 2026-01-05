@@ -9,9 +9,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 public interface OrderService {
     BaseResponseDTO createOrder(OrderRequestDTO requestDTO);
-    ResponseEntity<Resource> getOrderProductFile(Integer orderProductId);
+    ResponseEntity<Resource> getOrderProductFile(Integer orderProductId) throws IOException;
     BaseResponseDTO saveDesignFile(Integer orderProductId, MultipartFile file);
     BaseResponseDTO getOrderWithPaging(SearchOrderRequestDTO requestDTO);
     BaseResponseDTO getOrderWithPagingForUser(SearchOrderRequestDTO requestDTO);

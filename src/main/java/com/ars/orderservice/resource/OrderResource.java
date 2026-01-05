@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/api/v1/orders")
 public class OrderResource {
@@ -29,7 +31,7 @@ public class OrderResource {
     }
 
     @GetMapping("/products/files/download/{orderProductId}")
-    public ResponseEntity<Resource> getOrderProductDesignFile(@PathVariable Integer orderProductId) {
+    public ResponseEntity<Resource> getOrderProductDesignFile(@PathVariable Integer orderProductId) throws IOException {
         return orderService.getOrderProductFile(orderProductId);
     }
 

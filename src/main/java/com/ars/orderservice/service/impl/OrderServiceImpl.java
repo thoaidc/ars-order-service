@@ -59,8 +59,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -142,7 +145,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ResponseEntity<Resource> getOrderProductFile(Integer orderProductId) {
+    public ResponseEntity<Resource> getOrderProductFile(Integer orderProductId) throws IOException {
         Optional<OrderProductResponse> orderProductOptional = orderProductRepository.findOrderProductData(orderProductId);
 
         if (orderProductOptional.isEmpty()) {
@@ -157,9 +160,20 @@ public class OrderServiceImpl implements OrderService {
 
             if (feignResponse.getStatusCode().is2xxSuccessful() && feignResponse.getBody() != null) {
                 ByteArrayResource resource = new ByteArrayResource(feignResponse.getBody());
+                MediaType contentType = feignResponse.getHeaders().getContentType();
+                String contentDisposition = feignResponse.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION);
+
+                if (contentType == null) {
+                    contentType = MediaType.APPLICATION_OCTET_STREAM;
+                }
+
+                if (contentDisposition == null) {
+                    contentDisposition = "attachment; filename=\"ars_file_" + orderProduct.getId() + "\"";
+                }
+
                 return ResponseEntity.ok()
-                        .contentType(MediaType.parseMediaType("application/zip"))
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"product_design.zip\"")
+                        .contentType(contentType)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                         .body(resource);
             } else {
                 return ResponseEntity.notFound().build();
@@ -175,9 +189,11 @@ public class OrderServiceImpl implements OrderService {
             return ResponseEntity.notFound().build();
         }
 
+        Path path = file.toPath();
+        String contentType = Optional.ofNullable(Files.probeContentType(path)).orElse(MediaType.APPLICATION_OCTET_STREAM_VALUE);
         Resource resource = new FileSystemResource(file);
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("application/zip"))
+                .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                 .body(resource);
     }
