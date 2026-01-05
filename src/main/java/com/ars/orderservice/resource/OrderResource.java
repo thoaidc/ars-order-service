@@ -7,6 +7,7 @@ import com.dct.model.dto.response.BaseResponseDTO;
 
 import jakarta.validation.Valid;
 import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -14,7 +15,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -28,6 +31,14 @@ public class OrderResource {
     @GetMapping("/products/files/download/{orderProductId}")
     public ResponseEntity<Resource> getOrderProductDesignFile(@PathVariable Integer orderProductId) {
         return orderService.getOrderProductFile(orderProductId);
+    }
+
+    @PostMapping(value = "/products/files/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public BaseResponseDTO uploadDesign(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("orderProductId") Integer orderProductId
+    ) {
+        return orderService.saveDesignFile(orderProductId, file);
     }
 
     @GetMapping

@@ -81,6 +81,7 @@ public class OrderDTO {
         private String productThumbnail;
         private String note;
         private String data;
+        private OrderProductDataDTO metadata;
         private BigDecimal totalAmount;
 
         public Integer getId() {
@@ -169,6 +170,14 @@ public class OrderDTO {
 
         public void setTotalAmount(BigDecimal totalAmount) {
             this.totalAmount = totalAmount;
+        }
+
+        public OrderProductDataDTO getMetadata() {
+            return metadata;
+        }
+
+        public void setMetadata(OrderProductDataDTO metadata) {
+            this.metadata = metadata;
         }
     }
 

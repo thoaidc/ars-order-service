@@ -1,9 +1,12 @@
 package com.ars.orderservice.dto.response;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class OrderProductDataDTO {
     private boolean customizable;
     private String designFile;
-    private String selectedOptions;
+    private List<Option> selectedOptions = new ArrayList<>();
 
     public boolean isCustomizable() {
         return customizable;
@@ -25,11 +28,11 @@ public class OrderProductDataDTO {
         this.designFile = designFile;
     }
 
-    public String getSelectedOptions() {
+    public List<Option> getSelectedOptions() {
         return selectedOptions;
     }
 
-    public void setSelectedOptions(String selectedOptions) {
+    public void setSelectedOptions(List<Option> selectedOptions) {
         this.selectedOptions = selectedOptions;
     }
 

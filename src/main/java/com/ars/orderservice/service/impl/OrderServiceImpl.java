@@ -54,7 +54,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -178,6 +180,33 @@ public class OrderServiceImpl implements OrderService {
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
                 .body(resource);
+    }
+
+    @Override
+    public BaseResponseDTO saveDesignFile(Integer orderProductId, MultipartFile file) {
+        Optional<OrderProduct> orderProductOptional = orderProductRepository.findById(orderProductId);
+
+        if (orderProductOptional.isEmpty()) {
+            throw new BaseBadRequestException(ENTITY_NAME, "Order product not found");
+        }
+
+        OrderProduct orderProduct = orderProductOptional.get();
+        OrderProductDataDTO orderProductDataDTO = JsonUtils.parseJson(orderProduct.getData(), OrderProductDataDTO.class);
+
+        if (Objects.nonNull(orderProductDataDTO) && orderProductDataDTO.isCustomizable()) {
+            String filePath = fileUtils.save(file);
+
+            if (StringUtils.hasText(filePath)) {
+                orderProductDataDTO.setDesignFile(filePath);
+                orderProduct.setData(JsonUtils.toJsonString(orderProductDataDTO));
+                orderProductRepository.save(orderProduct);
+                return BaseResponseDTO.builder().ok();
+            }
+
+            throw new BaseBadRequestException(ENTITY_NAME, "Could not save file");
+        }
+
+        throw new BaseBadRequestException(ENTITY_NAME, "Invalid order product info");
     }
 
     private void saveOutboxEvent(Order order, OrderRequestDTO request) {
@@ -321,12 +350,12 @@ public class OrderServiceImpl implements OrderService {
                     orderProduct.setProductId(product.getProductId());
                     orderProduct.setNote(product.getNote());
                     OrderProductDataDTO orderProductDataDTO = new OrderProductDataDTO();
-                    orderProductDataDTO.setSelectedOptions(product.getData());
                     List<OrderProductDataDTO.Option> options = JsonUtils.parseJsonToList(
                         product.getData(),
                         OrderProductDataDTO.Option.class
                     );
                     orderProductDataDTO.setCustomizable(!options.isEmpty());
+                    orderProductDataDTO.setSelectedOptions(options);
                     orderProduct.setData(JsonUtils.toJsonString(orderProductDataDTO));
                     return orderProduct;
                 }).toList();
@@ -368,6 +397,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderProductResponse -> {
                     OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
                     BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    orderProductDTO.setMetadata(JsonUtils.parseJson(orderProductDTO.getData(), OrderProductDataDTO.class));
                     orderProductsMap.add(orderProductDTO.getSubOrderId(), orderProductDTO);
                     return orderProductDTO;
                 }).toList();
@@ -400,6 +430,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderProductResponse -> {
                     OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
                     BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    orderProductDTO.setMetadata(JsonUtils.parseJson(orderProductDTO.getData(), OrderProductDataDTO.class));
                     return orderProductDTO;
                 }).toList();
         orderDetail.setProducts(orderProducts);
@@ -423,6 +454,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderProductResponse -> {
                     OrderDTO.OrderProductDTO orderProductDTO = new OrderDTO.OrderProductDTO();
                     BeanUtils.copyProperties(orderProductResponse, orderProductDTO);
+                    orderProductDTO.setMetadata(JsonUtils.parseJson(orderProductDTO.getData(), OrderProductDataDTO.class));
                     return orderProductDTO;
                 }).toList();
         subOrderDetail.setOrderDate(DateUtils.ofInstant(subOrder.getCreatedDate()).toString());
