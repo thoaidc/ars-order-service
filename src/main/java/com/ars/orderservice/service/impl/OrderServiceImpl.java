@@ -424,6 +424,7 @@ public class OrderServiceImpl implements OrderService {
                     return subOrderDetailDTO;
                 }).toList();
         orderDetail.setSubOrders(subOrders);
+        orderDetail.setOrderDate(DateUtils.ofInstant(order.getCreatedDate()).toString());
         return BaseResponseDTO.builder().ok(orderDetail);
     }
 
