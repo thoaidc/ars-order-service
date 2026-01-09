@@ -8,12 +8,9 @@ import com.ars.orderservice.dto.mapping.OrderResponse;
 import com.ars.orderservice.dto.mapping.OrderSalesMapping;
 import com.ars.orderservice.dto.request.CheckOrderInfoRequestDTO;
 import com.ars.orderservice.dto.request.OrderRequestDTO;
+import com.ars.orderservice.dto.request.RevenueReportFilter;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
-import com.ars.orderservice.dto.response.CheckOrderInfoResponseDTO;
-import com.ars.orderservice.dto.response.OrderDTO;
-import com.ars.orderservice.dto.response.OrderDetailDTO;
-import com.ars.orderservice.dto.response.OrderProductDataDTO;
-import com.ars.orderservice.dto.response.SubOrderDetailDTO;
+import com.ars.orderservice.dto.response.*;
 import com.ars.orderservice.entity.Order;
 import com.ars.orderservice.entity.OrderProduct;
 import com.ars.orderservice.entity.OutBox;
@@ -501,6 +498,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return BaseResponseDTO.builder().ok(orderSalesData);
+    }
+
+    @Override
+    public BaseResponseDTO getRevenueReport(RevenueReportFilter requestDTO) {
+        Common.checkShopAuthorities(requestDTO.getShopId());
+        Page<RevenueReportDTO> revenueReportDTOS = orderRepository.getRevenueReport(requestDTO);
+        return BaseResponseDTO.builder().total(revenueReportDTOS.getTotalElements()).ok(revenueReportDTOS.getContent());
     }
 
     @Override

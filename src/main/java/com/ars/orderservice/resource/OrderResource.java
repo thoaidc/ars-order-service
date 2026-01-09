@@ -1,6 +1,7 @@
 package com.ars.orderservice.resource;
 
 import com.ars.orderservice.dto.request.OrderRequestDTO;
+import com.ars.orderservice.dto.request.RevenueReportFilter;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.ars.orderservice.service.OrderService;
 import com.dct.model.dto.response.BaseResponseDTO;
@@ -33,6 +34,11 @@ public class OrderResource {
     @GetMapping("/products/files/download/{orderProductId}")
     public ResponseEntity<Resource> getOrderProductDesignFile(@PathVariable Integer orderProductId) throws IOException {
         return orderService.getOrderProductFile(orderProductId);
+    }
+
+    @GetMapping("/reports/revenues")
+    public BaseResponseDTO getRevenueReport(@ModelAttribute RevenueReportFilter requestDTO) {
+        return orderService.getRevenueReport(requestDTO);
     }
 
     @PostMapping(value = "/products/files/uploads", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

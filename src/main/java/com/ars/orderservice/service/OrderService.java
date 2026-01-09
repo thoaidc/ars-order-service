@@ -1,6 +1,7 @@
 package com.ars.orderservice.service;
 
 import com.ars.orderservice.dto.request.OrderRequestDTO;
+import com.ars.orderservice.dto.request.RevenueReportFilter;
 import com.ars.orderservice.dto.request.SearchOrderRequestDTO;
 import com.dct.model.dto.response.BaseResponseDTO;
 import com.dct.model.event.PaymentFailureEvent;
@@ -23,6 +24,7 @@ public interface OrderService {
     BaseResponseDTO getOrderDetailForShop(Integer orderId);
     BaseResponseDTO getTotalOrderToday(boolean forAdmin);
     BaseResponseDTO getTotalOrderSalesLastSevenDay(boolean forAdmin);
+    BaseResponseDTO getRevenueReport(RevenueReportFilter requestDTO);
     void orderCompletion(PaymentSuccessEvent paymentSuccessEvent);
     void cancelOrder(PaymentFailureEvent paymentFailureEvent);
 }

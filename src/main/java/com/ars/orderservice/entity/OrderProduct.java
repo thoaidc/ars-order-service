@@ -1,20 +1,35 @@
 package com.ars.orderservice.entity;
 
+import com.ars.orderservice.dto.response.RevenueReportDTO;
 import com.dct.config.entity.AbstractAuditingEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "order_product")
 @SuppressWarnings("unused")
+@SqlResultSetMappings(
+    {
+        @SqlResultSetMapping(
+            name = "revenueReportGetWithPaging",
+            classes = {
+                @ConstructorResult(
+                    targetClass = RevenueReportDTO.class,
+                    columns = {
+                        @ColumnResult(name = "productId", type = Integer.class),
+                        @ColumnResult(name = "productCode", type = String.class),
+                        @ColumnResult(name = "productName", type = String.class),
+                        @ColumnResult(name = "grossRevenue", type = BigDecimal.class),
+                        @ColumnResult(name = "netRevenue", type = BigDecimal.class),
+                        @ColumnResult(name = "totalSales", type = Integer.class)
+                    }
+                )
+            }
+        )
+    }
+)
 public class OrderProduct extends AbstractAuditingEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sub_order_id", nullable = false)
