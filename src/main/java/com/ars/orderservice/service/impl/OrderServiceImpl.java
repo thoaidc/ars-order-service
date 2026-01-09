@@ -492,9 +492,9 @@ public class OrderServiceImpl implements OrderService {
         List<OrderSalesMapping> orderSalesData;
 
         if (forAdmin) {
-            orderSalesData = orderRepository.getTotalOrderSalesToDay();
+            orderSalesData = orderRepository.getTotalOrderSalesLastSevenDay();
         } else {
-            orderSalesData = subOrderRepository.getTotalOrderSalesToDay(userDTO.getShopId());
+            orderSalesData = subOrderRepository.getTotalOrderSalesLastSevenDay(userDTO.getShopId());
         }
 
         return BaseResponseDTO.builder().ok(orderSalesData);

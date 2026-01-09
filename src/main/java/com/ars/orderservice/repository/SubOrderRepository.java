@@ -10,7 +10,13 @@ import java.util.List;
 
 @Repository
 public interface SubOrderRepository extends JpaRepository<SubOrder, Integer>, SubOrderRepositoryCustom {
-    @Query(value = "SELECT COUNT(*) FROM sub_order WHERE shop_id = ? AND created_date >= CURDATE()", nativeQuery = true)
+    @Query(value = """
+            SELECT COUNT(*)
+            FROM sub_order
+            WHERE shop_id = ? AND status = 'COMPLETED' AND payment_status = 'PAID' AND created_date >= CURDATE()
+        """,
+        nativeQuery = true
+    )
     long getTotalOrdersTodayByShopId(Integer shopId);
 
     @Query(value = """
@@ -27,11 +33,11 @@ public interface SubOrderRepository extends JpaRepository<SubOrder, Integer>, Su
             FROM dates d
             LEFT JOIN sub_order s ON DATE(s.created_date) = d.calendar_date
             AND s.shop_id = ?
-            AND s.status = 'COMPLETED'
+            AND s.status = 'COMPLETED' AND s.payment_status = 'PAID'
             GROUP BY d.calendar_date
             ORDER BY d.calendar_date
         """,
         nativeQuery = true
     )
-    List<OrderSalesMapping> getTotalOrderSalesToDay(Integer shopId);
+    List<OrderSalesMapping> getTotalOrderSalesLastSevenDay(Integer shopId);
 }
