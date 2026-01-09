@@ -25,6 +25,7 @@ public interface OrderService {
     BaseResponseDTO getTotalOrderToday(boolean forAdmin);
     BaseResponseDTO getTotalOrderSalesLastSevenDay(boolean forAdmin);
     BaseResponseDTO getRevenueReport(RevenueReportFilter requestDTO);
+    BaseResponseDTO getRevenueReportInternal(RevenueReportFilter requestDTO);
     void orderCompletion(PaymentSuccessEvent paymentSuccessEvent);
     void cancelOrder(PaymentFailureEvent paymentFailureEvent);
 }

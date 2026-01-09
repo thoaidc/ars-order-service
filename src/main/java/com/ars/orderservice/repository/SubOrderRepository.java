@@ -14,13 +14,22 @@ public interface SubOrderRepository extends JpaRepository<SubOrder, Integer>, Su
     long getTotalOrdersTodayByShopId(Integer shopId);
 
     @Query(value = """
+            WITH RECURSIVE dates AS (
+                SELECT DATE_SUB(CURDATE(), INTERVAL 6 DAY) AS calendar_date
+                UNION ALL
+                SELECT calendar_date + INTERVAL 1 DAY
+                FROM dates
+                WHERE calendar_date < CURDATE()
+            )
             SELECT
-                DATE(created_date) AS date,
-                SUM(amount) AS amount
-            FROM sub_order
-            WHERE shop_id = ? AND status = 'SUCCESS' AND created_date >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
-            GROUP BY DATE(created_date)
-            ORDER BY date
+                d.calendar_date AS date,
+                COUNT(s.id) AS amount
+            FROM dates d
+            LEFT JOIN sub_order s ON DATE(s.created_date) = d.calendar_date
+            AND s.shop_id = ?
+            AND s.status = 'COMPLETED'
+            GROUP BY d.calendar_date
+            ORDER BY d.calendar_date
         """,
         nativeQuery = true
     )

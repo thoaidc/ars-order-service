@@ -503,6 +503,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public BaseResponseDTO getRevenueReport(RevenueReportFilter requestDTO) {
         Common.checkShopAuthorities(requestDTO.getShopId());
+        return getRevenueReportInternal(requestDTO);
+    }
+
+    @Override
+    public BaseResponseDTO getRevenueReportInternal(RevenueReportFilter requestDTO) {
         Page<RevenueReportDTO> revenueReportDTOS = orderRepository.getRevenueReport(requestDTO);
         return BaseResponseDTO.builder().total(revenueReportDTOS.getTotalElements()).ok(revenueReportDTOS.getContent());
     }
@@ -562,7 +567,7 @@ public class OrderServiceImpl implements OrderService {
 
         switch (type) {
             case BasePaymentConstants.BalanceType.SHOP:
-                changeBalanceAmountEvent.setAmount(order.getTotalAmount());
+                changeBalanceAmountEvent.setAmount(order.getTotalAmount().subtract(platformFeeAmount));
                 changeBalanceAmountEvent.setSenderId(BasePaymentConstants.SYSTEM_ACCOUNT_ID);
                 changeBalanceAmountEvent.setReceiverId(order.getShopId());
                 break;
